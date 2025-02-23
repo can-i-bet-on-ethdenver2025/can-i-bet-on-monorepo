@@ -1,13 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import {ERC20Permit} from "openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Permit.sol";
-import {EIP712} from "openzeppelin-contracts/contracts/utils/cryptography/EIP712.sol";
-import {ERC20} from "openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
-import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
-import {ECDSA} from "openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol";
+import {ERC20Permit} from "./lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Permit.sol";
+import {EIP712} from "./lib/openzeppelin-contracts/contracts/utils/cryptography/EIP712.sol";
+import {ERC20} from "./lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
+import {Ownable} from "./lib/openzeppelin-contracts/contracts/access/Ownable.sol";
+import {ECDSA} from "./lib/openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol";
+import {FunctionsClient} from "./lib/chainlink/contracts/src/v0.8/functions/v1_3_0/FunctionsClient.sol";
+import {FunctionsRequest} from "./lib/chainlink/contracts/src/v0.8/functions/v1_0_0/libraries/FunctionsRequest.sol";
+import {AutomationCompatibleInterface} from "./lib/chainlink/contracts/src/v0.8/automation/AutomationCompatible.sol";
 
-contract BettingPools is EIP712, Ownable {
+contract BettingPools is EIP712, Ownable, FunctionsClient, AutomationCompatibleInterface {
+  using FunctionsRequest for FunctionsRequest.Request;
+
   // Enums
   enum PoolStatus {
     NONE,
@@ -52,6 +57,7 @@ contract BettingPools is EIP712, Ownable {
     uint256 poolId; // Id of the pool the bet belongs to
     uint256 createdAt; // Time at which the bet was initially created
     uint256 updatedAt; // Time which bet was updated (ie: if a user added more money to their bet)
+    bool isPayedOut; // Whether the bet has been paid out by Chainlink Automation
   }
 
   bytes32 public constant BET_TYPEHASH = keccak256(
@@ -66,10 +72,14 @@ contract BettingPools is EIP712, Ownable {
   uint256 public nextPoolId = 1;
   uint256 public nextBetId = 1;
 
-  mapping(uint256 => Pool) public pools;
+  mapping(uint256 poolId => Pool pool) public pools;
 
-  mapping(uint256 => Bet) public bets;
-  mapping(address => uint256[]) public userBets;
+  mapping(uint256 betId => Bet bet) public bets;
+  mapping(address bettor => uint256[] betIds) public userBets;
+
+  mapping(bytes32 functionsRequestId => uint256 poolId) public functionsRequestToPoolId;
+
+  uint256[] bettingPoolsToPayOut; // Array of poolIds which need to be paid out after the bet is graded
 
   // Functions Config
   uint64 public subscriptionId;
@@ -110,7 +120,8 @@ contract BettingPools is EIP712, Ownable {
       uint256 indexed betId, uint256 indexed poolId, address indexed user, uint256 optionIndex, uint256 amount
   );
 
-  constructor(address _usdc) EIP712("PromptBet", "0.0.1") Ownable(msg.sender) {
+  constructor(address _functionsRouter, address _usdc)
+  EIP712("PromptBet", "0.0.1") Ownable(msg.sender) FunctionsClient(_functionsRouter) {
     usdc = ERC20Permit(_usdc);
   }
 
@@ -163,8 +174,6 @@ contract BettingPools is EIP712, Ownable {
       closureCriteria,
       closureInstructions
     );
-
-    return poolId;
   }
 
   function placeBet(
@@ -218,7 +227,8 @@ contract BettingPools is EIP712, Ownable {
         amount: amount,
         poolId: poolId,
         createdAt: block.timestamp,
-        updatedAt: block.timestamp
+        updatedAt: block.timestamp,
+        isPayedOut: false
       });
       bets[betId] = newBet;
       pool.betIds.push(betId);
@@ -230,8 +240,6 @@ contract BettingPools is EIP712, Ownable {
     pool.betTotals[optionIndex] += amount;
 
     emit BetPlaced(betId, poolId, bettor, optionIndex, amount);
-
-    return betId;
   }
 
   // POSSIBLE FUTURE EXTENSION: Anyone can call this function to grade a bet at any time, but
@@ -243,45 +251,135 @@ contract BettingPools is EIP712, Ownable {
     require(pool.status == PoolStatus.PENDING, "Pool is not open for betting");
     require(block.timestamp >= pool.betsCloseAt, "Betting period has not closed yet");
 
+    FunctionsRequest.Request memory req;
+    req.initializeRequest(
+        FunctionsRequest.Location.Inline,
+        FunctionsRequest.CodeLanguage.JavaScript,
+        script
+    );
+    req.secretsLocation = FunctionsRequest.Location.Remote;
+    req.encryptedSecretsReference = encryptedSecretsReference;
+
+    bytes[] memory bytesArgs = new bytes[](6);
+    bytesArgs[0] = abi.encodePacked(pool.id);
+    bytesArgs[1] = abi.encodePacked(pool.betsCloseAt);
+    bytesArgs[2] = abi.encodePacked(pool.decisionDate);
+    bytesArgs[3] = abi.encodePacked(pool.betTotals[0]);
+    bytesArgs[4] = abi.encodePacked(pool.betTotals[1]);
+    bytesArgs[5] = abi.encodePacked(pool.createdAt);
+    req.setBytesArgs(bytesArgs);
+
+    string[] memory args = new string[](5);
+    args[0] = pool.question;
+    args[1] = pool.options[0];
+    args[2] = pool.options[1];
+    args[3] = pool.closureCriteria;
+    args[4] = pool.closureInstructions;
+    req.setArgs(args);
+
+    bytes32 requestId = _sendRequest(
+      req.encodeCBOR(),
+      subscriptionId,
+      callbackGasLimit,
+      donId
+    );
+
+    functionsRequestToPoolId[requestId] = poolId;
   }
 
   function setFunctionsRequestConfig(
-    uint64 subscriptionId,
-    bytes32 donId,
-    uint24 callbackGasLimit,
-    bytes calldata encryptedSecretsReference
+    uint64 _subscriptionId,
+    bytes32 _donId,
+    uint24 _callbackGasLimit
   ) external onlyOwner {
-
+    subscriptionId = _subscriptionId;
+    donId = _donId;
+    callbackGasLimit = _callbackGasLimit;
   }
 
-  function setFunctionsRequestScript(string calldata script) external onlyOwner {
-
+  function setFunctionsSecrets(bytes calldata _encryptedSecretsReference) external onlyOwner {
+    encryptedSecretsReference = _encryptedSecretsReference;
   }
 
-  // Functions needs to return 0,1,2,3 for the 4 possible outcomes
+  // POSSIBLE FUTURE EXTENSION: Set some governance on how and when the script can changed.
+  // Maybe take a snapshot of the script for each  pool so it cannot be changed after the pool is created?
+  function setFunctionsRequestScript(string calldata _script) external onlyOwner {
+    script = _script;
+  }
+
+  // Functions will return 0, 1, 2, or 3 for the 4 possible outcomes
   // (0 = option 1 wins, 1 = option 2 wins, 2 = push, 3 = unable to grade yet)
-  function sendFunctionsRequest(uint256 poolId) internal {
+  function fulfillRequest(
+    bytes32 requestId, bytes memory response, bytes memory err
+  ) internal override {
+    require(err.length == 0, "Error grading bet");
+
+    uint256 poolId = functionsRequestToPoolId[requestId];
+    Pool storage pool = pools[poolId];
+
+    require(pool.status == PoolStatus.PENDING, "Invalid pool status");
+    pool.status = PoolStatus.GRADED;
+
+    uint256 responseOption = abi.decode(response, (uint256));
+
+    if (responseOption == 0) {
+      pool.winningOption = 0;
+    } else if (responseOption == 1) {
+      pool.winningOption = 1;
+    } else if (responseOption == 2) {
+        pool.isDraw = true;
+    } else {
+      revert("Bet cannot be graded");
+    }
+
+    bettingPoolsToPayOut.push(poolId);
   }
-    
-//     if (pool.status != PoolStatus.PENDING) revert PoolNotOpen();
-//     if (block.timestamp >= pool.betsCloseAt) revert BettingPeriodClosed();
-//     if (optionIndex >= 2) revert InvalidOptionIndex();
 
-//     Bet[2] storage userBetsArray = pool.betsByUser[msg.sender];
-//     if (userBetsArray[optionIndex].amount != 0) revert BetAlreadyExists();
+  // TODO: This implementation of using Chainlink Automation to "push" payouts will break
+  // if there are too many pools or bets and the gas limit is exceeded.
+  // In the future, we will need to implement a more efficient payout mechanism.
+  // (Maybe a "pull" model?)
 
-//     if (!usdcToken.transferFrom(msg.sender, address(this), amount)) {
-//         revert USDCTransferFailed();
-//     }
+  function checkUpkeep(bytes calldata) external view override returns (bool upkeepNeeded, bytes memory performData) {
+    upkeepNeeded = bettingPoolsToPayOut.length > 0;
+    performData = abi.encode(bettingPoolsToPayOut[0]);
+  }
 
-//     uint256 betId = nextBetId++;
-//     Bet memory newBet = Bet({id: betId, owner: msg.sender, option: optionIndex, amount: amount, poolId: poolId});
-//     bets[betId] = newBet;
-//     pool.betIds.push(betId);
-//     userBetsArray[optionIndex] = newBet;
-//     pool.betTotals[optionIndex] += amount;
-//     userBets[msg.sender].push(betId);
+  function performUpkeep(bytes calldata performData) external override {
+    uint256 poolId = abi.decode(performData, (uint256));
+    Pool storage pool = pools[poolId];
 
-//     emit BetPlaced(betId, poolId, msg.sender, optionIndex, amount);
-// }
+    require(pool.status == PoolStatus.GRADED, "Invalid pool status");
+    require(block.timestamp >= pool.betsCloseAt, "Betting period has not closed yet");
+
+    if (pool.isDraw) {
+      // Refund all bets
+      for (uint256 i = 0; i < pool.betIds.length; i++) {
+        Bet storage bet = bets[pool.betIds[i]];
+        usdc.transfer(bet.owner, bet.amount);
+      }
+    } else {
+      // Payout the winning bet
+      for (uint256 i = 0; i < pool.betIds.length; i++) {
+        Bet storage bet = bets[pool.betIds[i]];
+        if (bet.option == pool.winningOption) {
+          uint256 fee = bet.amount * PAYOUT_FEE_BP / 10000;
+          uint256 payout = bet.amount - fee;
+          usdc.transfer(bet.owner, payout);
+          usdc.transfer(owner(), fee);
+          bets[pool.betIds[i]].isPayedOut = true;
+        }
+      }
+    }
+
+    // Remove the pool from the array of pools to pay out
+    uint256 index = 0;
+    for (uint256 i = 0; i < bettingPoolsToPayOut.length; i++) {
+      if (bettingPoolsToPayOut[i] == poolId) {
+        index = i;
+      }
+    }
+    bettingPoolsToPayOut[index] = bettingPoolsToPayOut[bettingPoolsToPayOut.length - 1];
+    bettingPoolsToPayOut.pop();
+  }
 }
