@@ -4,20 +4,29 @@ import {
   PrivyLogoutButton,
 } from "@/components/PrivyLoginButton";
 import PromptbetLogo from "@/stories/assets/promptbet-logo2.jpg";
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { Menu, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { NavbarLink } from "./NavbarLink";
+import { NetworkButton } from "./NetworkButton";
 
 export const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { ready, authenticated } = usePrivy();
+  const { wallets } = useWallets();
 
   const handleToggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
-  const { ready, authenticated } = usePrivy();
+
+  // Get the chain ID from the first wallet if available
+  const currentChainId = wallets?.[0]?.chainId;
+
+  const networkButton = currentChainId && (
+    <NetworkButton chainId={currentChainId} size="small" />
+  );
 
   return (
     <nav className="border-b">
@@ -38,6 +47,7 @@ export const Navbar = () => {
           <NavbarLink href="/activity">
             Recent activity (NOT IMPLEMENTED)
           </NavbarLink>
+          {ready && authenticated && networkButton}
           {ready && authenticated ? (
             <PrivyLogoutButton />
           ) : (
@@ -63,6 +73,7 @@ export const Navbar = () => {
             <NavbarLink href="/activity">
               Recent activity (NOT IMPLEMENTED)
             </NavbarLink>
+            {ready && authenticated && networkButton}
             {ready && authenticated ? (
               <div>
                 <PrivyLogoutButton />
