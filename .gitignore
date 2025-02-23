@@ -65,3 +65,5 @@ storybook-static/
 .project
 .classpath
 
+# Libs
+lib/
