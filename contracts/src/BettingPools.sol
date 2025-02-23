@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {ERC20Permit} from "./lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Permit.sol";
-import {EIP712} from "./lib/openzeppelin-contracts/contracts/utils/cryptography/EIP712.sol";
-import {ERC20} from "./lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
-import {Ownable} from "./lib/openzeppelin-contracts/contracts/access/Ownable.sol";
-import {ECDSA} from "./lib/openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol";
-import {FunctionsClient} from "./lib/chainlink/contracts/src/v0.8/functions/v1_0_0/FunctionsClient.sol";
-import {FunctionsRequest} from "./lib/chainlink/contracts/src/v0.8/functions/v1_0_0/libraries/FunctionsRequest.sol";
-import {AutomationCompatibleInterface} from "./lib/chainlink/contracts/src/v0.8/automation/AutomationCompatible.sol";
+import {ERC20Permit} from "../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Permit.sol";
+import {EIP712} from "../lib/openzeppelin-contracts/contracts/utils/cryptography/EIP712.sol";
+import {ERC20} from "../lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
+import {Ownable} from "../lib/openzeppelin-contracts/contracts/access/Ownable.sol";
+import {ECDSA} from "../lib/openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol";
+import {FunctionsClient} from "../lib/chainlink/contracts/src/v0.8/functions/v1_0_0/FunctionsClient.sol";
+import {FunctionsRequest} from "../lib/chainlink/contracts/src/v0.8/functions/v1_0_0/libraries/FunctionsRequest.sol";
+import {AutomationCompatibleInterface} from "../lib/chainlink/contracts/src/v0.8/automation/AutomationCompatible.sol";
 
 contract BettingPools is EIP712, Ownable, FunctionsClient, AutomationCompatibleInterface {
   using FunctionsRequest for FunctionsRequest.Request;
@@ -60,6 +60,19 @@ contract BettingPools is EIP712, Ownable, FunctionsClient, AutomationCompatibleI
     bool isPayedOut; // Whether the bet has been paid out by Chainlink Automation
   }
 
+  struct CreatePoolParams {
+    string question;
+    string[2] options;
+    uint40 betsCloseAt;
+    uint40 decisionDate;
+    string imageUrl;
+    string category;
+    string creatorName;
+    string creatorId;
+    string closureCriteria;
+    string closureInstructions;
+  }
+
   bytes32 public constant BET_TYPEHASH = keccak256(
     "Bet(uint256 poolId,uint256 optionIndex,uint256 amount,address bettor)"
   );
@@ -102,19 +115,7 @@ contract BettingPools is EIP712, Ownable, FunctionsClient, AutomationCompatibleI
   error PoolAlreadyClosed();
 
   // Events
-  event PoolCreated(
-    uint256 indexed poolId,
-    string question,
-    string[2] options,
-    uint40 betsCloseAt,
-    uint40 decisionDate,
-    string imageUrl,
-    string category,
-    string creatorName,
-    string creatorId,
-    string closureCriteria,
-    string closureInstructions
-  );
+  event PoolCreated(uint256 poolId, CreatePoolParams params);
   event PoolClosed(uint256 indexed poolId, uint256 selectedOption);
   event BetPlaced(
       uint256 indexed betId, uint256 indexed poolId, address indexed user, uint256 optionIndex, uint256 amount
@@ -125,55 +126,32 @@ contract BettingPools is EIP712, Ownable, FunctionsClient, AutomationCompatibleI
     usdc = ERC20Permit(_usdc);
   }
 
-  function createPool(
-    string calldata question,
-    string[2] calldata options,
-    uint40 betsCloseAt, // Time at which no more bets can be placed
-    uint40 decisionDate, // UNUSED (You can pass 1771898245 which is 1 year in the future)
-    string calldata imageUrl, // UNUSED (pass empty string "")
-    string calldata category, // UNUSED (pass empty string "")
-    string calldata creatorName, // Telegram username of creator
-    string calldata creatorId, // Telegram id of creator
-    string calldata closureCriteria, // Criteria for WHEN a bet should be graded
-    string calldata closureInstructions // Instructions for HOW to decide which option won
-  ) external returns (uint256 poolId) {
-    if (betsCloseAt <= block.timestamp) revert BetsCloseTimeInPast();
-    if (betsCloseAt >= decisionDate) revert BetsCloseAfterDecision();
+  function createPool(CreatePoolParams calldata params) external returns (uint256 poolId) {
+    if (params.betsCloseAt <= block.timestamp) revert BetsCloseTimeInPast();
+    if (params.betsCloseAt >= params.decisionDate) revert BetsCloseAfterDecision();
 
     poolId = nextPoolId++;
     
     Pool storage pool = pools[poolId];
     pool.id = poolId;
-    pool.question = question;
-    pool.options = options;
-    pool.betsCloseAt = betsCloseAt;
-    pool.decisionDate = decisionDate;
+    pool.question = params.question;
+    pool.options = params.options;
+    pool.betsCloseAt = params.betsCloseAt;
+    pool.decisionDate = params.decisionDate;
     pool.betTotals = [0, 0];
     pool.betIds = new uint256[](0);
     pool.winningOption = 0;
     pool.status = PoolStatus.PENDING;
     pool.isDraw = false;
     pool.createdAt = block.timestamp;
-    pool.imageUrl = imageUrl;
-    pool.category = category;
-    pool.creatorName = creatorName;
-    pool.creatorId = creatorId;
-    pool.closureCriteria = closureCriteria;
-    pool.closureInstructions = closureInstructions;
+    pool.imageUrl = params.imageUrl;
+    pool.category = params.category;
+    pool.creatorName = params.creatorName;
+    pool.creatorId = params.creatorId;
+    pool.closureCriteria = params.closureCriteria;
+    pool.closureInstructions = params.closureInstructions;
 
-    emit PoolCreated(
-      poolId,
-      question,
-      options,
-      betsCloseAt,
-      decisionDate,
-      imageUrl,
-      category,
-      creatorName,
-      creatorId,
-      closureCriteria,
-      closureInstructions
-    );
+    emit PoolCreated(poolId, params);
   }
 
   function placeBet(

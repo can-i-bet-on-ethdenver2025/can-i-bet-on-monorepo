@@ -18,7 +18,29 @@ https://book.getfoundry.sh/
 ### Build
 
 ```shell
-$ forge build
+$ forge build --via-ir
+```
+
+### Deploy
+
+Set all required env vars. with `source /path/to/.env`.
+
+```shell
+$ forge script script/DemoPools.s.sol --rpc-url $BASE_SEPOLIA_RPC_URL --broadcast --private-keys $MAIN_PRIVATE_KEY --private-keys $ACCOUNT1_PRIVATE_KEY --private-keys $ACCOUNT2_PRIVATE_KEY --private-keys $ACCOUNT3_PRIVATE_KEY --via-ir
+```
+
+### Verify
+
+Set VERIFIER_URL="https://api-sepolia.basescan.org/api?" env var and ETHERSCAN_API_KEY to your Basescan API key.
+
+First you need to get the ABI-encoded deployment args.
+
+```shell
+$ cast abi-encode "constructor(address,address)" <0xFunctionsRouterAddress> <0xUsdcAddress>
+```
+
+```shell
+$ forge verify-contract <Deployed Contract Address> BettingPools --watch --verifier-url "https://api-sepolia.basescan.org/api?" --chain-id 84532 --via-ir --constructor-args <ABI Encoded Args>
 ```
 
 ### Test
