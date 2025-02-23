@@ -1,0 +1,8 @@
+{
+  "base-sepolia": {
+    "BettingPools": {
+      "address": "0xaAbF2872457CFD6fD061Ec072F235085e899D3C0",
+      "startBlock": 22210470
+    }
+  }
+}

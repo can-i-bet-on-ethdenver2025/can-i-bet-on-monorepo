@@ -1,0 +1,107 @@
+enum PoolStatus {
+  PENDING
+  GRADED
+}
+
+type Bet @entity {
+  id: Bytes!
+  betIntId: BigInt! # uint256
+  poolIntId: BigInt! # uint256
+  poolIdHex: Bytes!
+  pool: Pool!
+  user: Bytes! # address
+  optionIndex: BigInt! # uint256
+  amount: BigInt! # uint256
+  createdAt: BigInt!
+  updatedAt: BigInt!
+
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type BetCancelled @entity(immutable: true) {
+  id: Bytes!
+  betId: BigInt! # uint256
+  poolId: BigInt! # uint256
+  user: Bytes! # address
+  optionIndex: BigInt! # uint256
+  amount: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+  betPlaced: BetPlaced!
+  poolCreated: PoolCreated!
+}
+
+type BetPlaced @entity(immutable: true) {
+  id: Bytes!
+  betId: BigInt! # uint256
+  poolId: BigInt! # uint256
+  user: Bytes! # address
+  optionIndex: BigInt! # uint256
+  amount: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+  poolCreated: PoolCreated!
+}
+
+type Pool @entity {
+  id: Bytes!
+  poolIntId: BigInt! # uint256
+  question: String! # string
+  options: [String!]! # string[2]
+  totalBets: BigInt! # uint256
+  totalBetsByOption: [BigInt!]! # uint256[2]
+  selectedOption: BigInt! # uint256
+  status: PoolStatus!
+  bets: [Bet!]! @derivedFrom(field: "pool")
+  imageUrl: String!
+  category: String!
+  creatorAddress: Bytes! # address
+  creatorName: String! # string
+  creatorId: String! # string
+  closureCriteria: String!
+  closureInstructions: String!
+  betsCloseAt: BigInt! # uint40
+  decisionDate: BigInt! # uint40
+  isDraw: Boolean!
+
+  createdBlockNumber: BigInt!
+  createdBlockTimestamp: BigInt!
+  createdTransactionHash: Bytes!
+  lastUpdatedBlockNumber: BigInt!
+  lastUpdatedBlockTimestamp: BigInt!
+  lastUpdatedTransactionHash: Bytes!
+  gradedBlockNumber: BigInt!
+  gradedBlockTimestamp: BigInt!
+  gradedTransactionHash: Bytes!
+}
+
+type PoolClosed @entity(immutable: true) {
+  id: Bytes!
+  poolId: BigInt! # uint256
+  selectedOption: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type PoolCreated @entity(immutable: true) {
+  id: Bytes!
+  poolId: BigInt! # uint256
+  creatorId: String! # string
+  question: String! # string
+  options: [String!]! # string[2]
+  betsCloseAt: BigInt! # uint40
+  decisionDate: BigInt! # uint40
+  imageUrl: String!
+  category: String!
+  creatorName: String!
+  closureCriteria: String!
+  closureInstructions: String!
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
