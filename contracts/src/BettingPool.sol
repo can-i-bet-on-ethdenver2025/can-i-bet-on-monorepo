@@ -54,6 +54,19 @@ contract BettingPools is EIP712, Ownable {
     uint256 updatedAt; // Time which bet was updated (ie: if a user added more money to their bet)
   }
 
+   struct PoolCreationParams {
+      string question;
+      string[2] options;
+      uint40 betsCloseAt;
+      uint40 decisionDate;
+      string imageUrl;
+      string category;
+      string creatorName;
+      string creatorId;
+      string closureCriteria;
+      string closureInstructions;
+    }
+
   bytes32 public constant BET_TYPEHASH = keccak256(
     "Bet(uint256 poolId,uint256 optionIndex,uint256 amount,address bettor)"
   );
@@ -91,19 +104,23 @@ contract BettingPools is EIP712, Ownable {
   error DecisionDateNotReached();
   error PoolAlreadyClosed();
 
+  struct PoolCreatedEvent {
+    string question;
+    string[2] options;
+    uint40 betsCloseAt;
+    uint40 decisionDate;
+    string imageUrl;
+    string category;
+    string creatorName;
+    string closureCriteria;
+    string closureInstructions;
+  }
   // Events
   event PoolCreated(
     uint256 indexed poolId,
-    string question,
-    string[2] options,
-    uint40 betsCloseAt,
-    uint40 decisionDate,
-    string imageUrl,
-    string category,
-    string creatorName,
-    string creatorId,
-    string closureCriteria,
-    string closureInstructions
+    string indexed creatorId,
+    PoolCreatedEvent poolCreatedEvent
+    
   );
   event PoolClosed(uint256 indexed poolId, uint256 selectedOption);
   event BetPlaced(
@@ -114,54 +131,45 @@ contract BettingPools is EIP712, Ownable {
     usdc = ERC20Permit(_usdc);
   }
 
-  function createPool(
-    string calldata question,
-    string[2] calldata options,
-    uint40 betsCloseAt, // Time at which no more bets can be placed
-    uint40 decisionDate, // UNUSED (You can pass 1771898245 which is 1 year in the future)
-    string calldata imageUrl, // UNUSED (pass empty string "")
-    string calldata category, // UNUSED (pass empty string "")
-    string calldata creatorName, // Telegram username of creator
-    string calldata creatorId, // Telegram id of creator
-    string calldata closureCriteria, // Criteria for WHEN a bet should be graded
-    string calldata closureInstructions // Instructions for HOW to decide which option won
-  ) external returns (uint256 poolId) {
-    if (betsCloseAt <= block.timestamp) revert BetsCloseTimeInPast();
-    if (betsCloseAt >= decisionDate) revert BetsCloseAfterDecision();
+  function createPool(PoolCreationParams calldata params) external returns (uint256 poolId) {
+    if (params.betsCloseAt <= block.timestamp) revert BetsCloseTimeInPast();
+    if (params.betsCloseAt >= params.decisionDate) revert BetsCloseAfterDecision();
 
     poolId = nextPoolId++;
     
     Pool storage pool = pools[poolId];
     pool.id = poolId;
-    pool.question = question;
-    pool.options = options;
-    pool.betsCloseAt = betsCloseAt;
-    pool.decisionDate = decisionDate;
+    pool.question = params.question;
+    pool.options = params.options;
+    pool.betsCloseAt = params.betsCloseAt;
+    pool.decisionDate = params.decisionDate;
     pool.betTotals = [0, 0];
     pool.betIds = new uint256[](0);
     pool.winningOption = 0;
     pool.status = PoolStatus.PENDING;
     pool.isDraw = false;
     pool.createdAt = block.timestamp;
-    pool.imageUrl = imageUrl;
-    pool.category = category;
-    pool.creatorName = creatorName;
-    pool.creatorId = creatorId;
-    pool.closureCriteria = closureCriteria;
-    pool.closureInstructions = closureInstructions;
+    pool.imageUrl = params.imageUrl;
+    pool.category = params.category;
+    pool.creatorName = params.creatorName;
+    pool.creatorId = params.creatorId;
+    pool.closureCriteria = params.closureCriteria;
+    pool.closureInstructions = params.closureInstructions;
 
     emit PoolCreated(
-      poolId,
-      question,
-      options,
-      betsCloseAt,
-      decisionDate,
-      imageUrl,
-      category,
-      creatorName,
-      creatorId,
-      closureCriteria,
-      closureInstructions
+      poolId, 
+      params.creatorId,
+      PoolCreatedEvent(
+        params.question,
+        params.options,
+        params.betsCloseAt,
+        params.decisionDate,
+        params.imageUrl,
+        params.category,
+        params.creatorName,
+        params.closureCriteria,
+        params.closureInstructions
+      )
     );
 
     return poolId;
