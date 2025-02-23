@@ -64,6 +64,3 @@ storybook-static/
 .settings/
 .project
 .classpath
-
-# Libs
-lib/
