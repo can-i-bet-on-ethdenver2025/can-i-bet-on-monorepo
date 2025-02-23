@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.24;
 
 import {ERC20Permit} from "./lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Permit.sol";
 import {EIP712} from "./lib/openzeppelin-contracts/contracts/utils/cryptography/EIP712.sol";
 import {ERC20} from "./lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
 import {Ownable} from "./lib/openzeppelin-contracts/contracts/access/Ownable.sol";
 import {ECDSA} from "./lib/openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol";
-import {FunctionsClient} from "./lib/chainlink/contracts/src/v0.8/functions/v1_3_0/FunctionsClient.sol";
+import {FunctionsClient} from "./lib/chainlink/contracts/src/v0.8/functions/v1_0_0/FunctionsClient.sol";
 import {FunctionsRequest} from "./lib/chainlink/contracts/src/v0.8/functions/v1_0_0/libraries/FunctionsRequest.sol";
 import {AutomationCompatibleInterface} from "./lib/chainlink/contracts/src/v0.8/automation/AutomationCompatible.sol";
 
