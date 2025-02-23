@@ -1,0 +1,97 @@
+---
+description: This rule is useful for writing stories
+globs: stories/**/*.ts, stories/**/*.tsx
+---
+# Storybook Development Guidelines
+
+## Component Documentation
+- Document each component with a clear description and usage examples
+- Include props documentation with types and default values
+- Organize stories by component hierarchy/feature
+- Add links to related components and documentation
+- Document any required context providers or dependencies
+
+## Story Structure
+- Use Component Story Format (CSF) 
+- Create a default story for common use case
+- Include edge cases and error states
+- Implement responsive viewport testing
+- Document accessibility considerations
+
+## TypeScript Integration
+- Use proper typing for args and parameters
+- Define proper ArgTypes
+- Use template literals for dynamic story names
+- Implement proper type checking for story parameters
+
+### Example Story Structure:
+```typescript
+import type { Meta, StoryObj } from '@storybook/react'
+import { Button } from './Button'
+
+const meta: Meta<typeof Button> = {
+  title: 'Components/Button',
+  component: Button,
+  parameters: {
+    layout: 'centered'
+  },
+  argTypes: {
+    variant: {
+      control: 'select',
+      options: ['primary', 'secondary', 'ghost']
+    }
+  }
+}
+
+export default meta
+type Story = StoryObj<typeof Button>
+
+export const Primary: Story = {
+  args: {
+    variant: 'primary',
+    children: 'Click Me'
+  }
+}
+```
+
+## Testing and Interaction
+- Implement proper interaction testing
+- Add expect() assertions for critical paths
+- Test keyboard navigation and focus management
+- Document any required test setup
+- Include visual regression tests where needed
+
+## Addons and Tools
+- Use @storybook/addon-a11y for accessibility testing
+- Implement @storybook/addon-interactions for user flows
+- Use @storybook/addon-viewport for responsive testing
+- Enable proper source code view
+- Configure theme switcher for dark/light mode testing
+
+## Design System Integration
+- Follow design token usage
+- Document any deviations from design system
+- Include proper color scheme support
+- Document spacing and layout guidelines
+- Include proper animation/transition documentation
+
+## Performance
+- Implement proper code-splitting for stories
+- Use lazy loading for complex components
+- Document any performance considerations
+- Implement proper mocking for external dependencies
+- Use proper build configuration for production
+
+## File Organization
+- Place stories adjacent to component files
+- Use consistent naming: Component.stories.tsx
+- Group related stories in story files
+- Implement proper story sorting
+- Use proper story hierarchy in sidebar
+
+## Customization
+- Document any custom configuration
+- Include proper decorator usage
+- Document any required environment variables
+- Include proper setup for third-party dependencies
+- Document any required polyfills
