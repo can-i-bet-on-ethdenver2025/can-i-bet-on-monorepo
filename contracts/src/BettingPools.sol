@@ -41,6 +41,7 @@ contract BettingPools is EIP712, Ownable, FunctionsClient, AutomationCompatibleI
     string creatorId; // Telegram id of user who created the bet
     string closureCriteria; // Criteria for WHEN a bet should be graded
     string closureInstructions; // Instructions for HOW to decide which option won
+    string twitterPostId; // Twitter post id of the bet
   }
 
   struct Signature {
@@ -120,6 +121,7 @@ contract BettingPools is EIP712, Ownable, FunctionsClient, AutomationCompatibleI
   event BetPlaced(
       uint256 indexed betId, uint256 indexed poolId, address indexed user, uint256 optionIndex, uint256 amount
   );
+  event TwitterPostIdSet(uint256 indexed poolId, string twitterPostId);
 
   constructor(address _functionsRouter, address _usdc)
   EIP712("PromptBet", "0.0.1") Ownable(msg.sender) FunctionsClient(_functionsRouter) {
@@ -128,7 +130,7 @@ contract BettingPools is EIP712, Ownable, FunctionsClient, AutomationCompatibleI
 
   function createPool(CreatePoolParams calldata params) external onlyOwner returns (uint256 poolId) {
     if (params.betsCloseAt <= block.timestamp) revert BetsCloseTimeInPast();
-    if (params.betsCloseAt >= params.decisionDate) revert BetsCloseAfterDecision();
+    if (params.betsCloseAt <= params.decisionDate) revert BetsCloseAfterDecision();
 
     poolId = nextPoolId++;
     
@@ -154,19 +156,21 @@ contract BettingPools is EIP712, Ownable, FunctionsClient, AutomationCompatibleI
     emit PoolCreated(poolId, params);
   }
 
+  function setTwitterPostId(uint256 poolId, string calldata twitterPostId) external onlyOwner {
+    pools[poolId].twitterPostId = twitterPostId;
+    emit TwitterPostIdSet(poolId, twitterPostId);
+  }
+
   function placeBet(
     uint256 poolId,
     uint256 optionIndex,
     uint256 amount,
     address bettor,
     uint256 usdcPermitDeadline,
-    Signature calldata permitSignature,
-    Signature calldata betSignature
+    Signature calldata permitSignature
   ) external returns (uint256 betId) {
-    Pool storage pool = pools[poolId];
-
-    require(block.timestamp <= pool.betsCloseAt, "Betting period has closed");
-    require(pool.status == PoolStatus.PENDING, "Pool is not open for betting");
+    require(block.timestamp <= pools[poolId].betsCloseAt, "Betting period has closed");
+    require(pools[poolId].status == PoolStatus.PENDING, "Pool is not open for betting");
     require(optionIndex < 2, "Invalid option index");
     require(amount > 0, "Amount must be greater than 0");
     require(usdc.balanceOf(bettor) >= amount, "Bettor does not have enough USDC");
@@ -182,20 +186,7 @@ contract BettingPools is EIP712, Ownable, FunctionsClient, AutomationCompatibleI
     );
     usdc.transferFrom(bettor, address(this), amount);
 
-    bytes32 offerStructHash = keccak256(
-      abi.encode(
-        BET_TYPEHASH,
-        poolId,
-        optionIndex,
-        amount,
-        bettor
-      )
-    );
-    bytes32 offerHash = _hashTypedDataV4(offerStructHash);
-    address recoveredBettorAddress = ECDSA.recover(offerHash, betSignature.v, betSignature.r, betSignature.s);
-    require(bettor == recoveredBettorAddress, "Invalid bet signature");
-
-    betId = pool.betsByUser[bettor][optionIndex].id;
+    betId = pools[poolId].betsByUser[bettor][optionIndex].id;
     if (betId == 0) { // User has not bet on this option before
       betId = nextBetId++;
       Bet memory newBet = Bet({
@@ -209,13 +200,13 @@ contract BettingPools is EIP712, Ownable, FunctionsClient, AutomationCompatibleI
         isPayedOut: false
       });
       bets[betId] = newBet;
-      pool.betIds.push(betId);
+      pools[poolId].betIds.push(betId);
       userBets[bettor].push(betId);
     } else {
-      pool.betsByUser[bettor][optionIndex].amount += amount;
-      pool.betsByUser[bettor][optionIndex].updatedAt = block.timestamp;
+      pools[poolId].betsByUser[bettor][optionIndex].amount += amount;
+      pools[poolId].betsByUser[bettor][optionIndex].updatedAt = block.timestamp;
     }
-    pool.betTotals[optionIndex] += amount;
+    pools[poolId].betTotals[optionIndex] += amount;
 
     emit BetPlaced(betId, poolId, bettor, optionIndex, amount);
   }

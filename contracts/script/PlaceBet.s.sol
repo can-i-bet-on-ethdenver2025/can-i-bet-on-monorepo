@@ -26,9 +26,14 @@ contract PlaceBetScript is Script {
 
         // USDC PERMIT SIGNATURE
 
+        // INPUT: User provides: 1. their address (ie: bettor) 2. USDC amount (use 6 decimals)
+        // BACKEND: We fetch: 1. their nonce 2. permit typehash
+        // BACKEND: We generate: 1. deadline (Date.now() + 1 hour in seconds (not milliseconds))
+        // BACKEND: We calculate: 1. permit struct hash
+        // BACKEND: We sign: 1. permit struct hash
+        // OUTPUT: We respond with: 1. permitDigest
         uint256 nonce = usdc.nonces(bettor);
         uint256 deadline = block.timestamp + 1 hours;
-
         bytes32 permitStructHash = keccak256(abi.encode(
             usdc.PERMIT_TYPEHASH(),
             bettor,
@@ -39,38 +44,23 @@ contract PlaceBetScript is Script {
         ));
         bytes32 permitDigest = usdc.getHash(permitStructHash);
 
+        // USER: signs permitDigest
         uint8 vPermit;
         bytes32 rPermit;
         bytes32 sPermit;
         (vPermit, rPermit, sPermit) = vm.sign(bettorPrivateKey, permitDigest);
 
-        // BET SIGNATURE
-
-        bytes32 betStructHash = keccak256(abi.encode(
-            bettingPools.BET_TYPEHASH(),
-            poolId,
-            optionIndex,
-            amount,
-            bettor
-        ));
-        bytes32 betDigest = bettingPools.getHash(betStructHash);
-
-        uint8 vBet;
-        bytes32 rBet;
-        bytes32 sBet;
-        (vBet, rBet, sBet) = vm.sign(bettorPrivateKey, betDigest);
-
         vm.startBroadcast(bettorPrivateKey);
 
-        // Place the bet with both signatures
+        // INPUT:1. poolId 2. optionIndex 3. amount 4. bettor 5. deadline (note user must provide the deadline they signed the permit with) 6. permitSignature
+        // BACKEND: We call placeBet
         bettingPools.placeBet(
             poolId,
             optionIndex,
             amount,
             bettor,
             deadline,
-            BettingPools.Signature({v: vPermit, r: rPermit, s: sPermit}),
-            BettingPools.Signature({v: vBet, r: rBet, s: sBet})
+            BettingPools.Signature({v: vPermit, r: rPermit, s: sPermit})
         );
 
         vm.stopBroadcast();

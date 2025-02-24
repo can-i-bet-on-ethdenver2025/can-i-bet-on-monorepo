@@ -11,7 +11,7 @@ contract MintMockUsdcScript is Script {
         address mockUsdcAddress = vm.envAddress("MOCK_USDC_ADDRESS");
         
         // Hardcoded recipient address - replace with your desired address
-        address recipient = 0xfC1e9D7525d4411899978E32F034Fc96d43fef17;
+        address recipient = 0x144dA759D7e0a7F69BC6cDA63650Ab1b0A7CC0E3;
         
         // Amount to mint (1000 USDC with 6 decimals)
         uint256 amount = 1000 * 1e6;
