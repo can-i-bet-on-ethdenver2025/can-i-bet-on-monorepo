@@ -59,7 +59,6 @@ type Pool @entity {
   bets: [Bet!]! @derivedFrom(field: "pool")
   imageUrl: String!
   category: String!
-  creatorAddress: Bytes! # address
   creatorName: String! # string
   creatorId: String! # string
   closureCriteria: String!

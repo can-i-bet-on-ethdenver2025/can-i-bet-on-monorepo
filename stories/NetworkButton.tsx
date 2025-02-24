@@ -15,6 +15,9 @@ export function NetworkButton({
   onClick,
   size = "default",
 }: NetworkButtonProps) {
+  if (typeof chainId !== "number") {
+  
+  }
   const chainConfig = CHAIN_CONFIG[chainId];
 
   if (!chainConfig) {

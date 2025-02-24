@@ -6,7 +6,6 @@ import {
 } from "../generated/BettingPools/BettingPools";
 import {
   Bet,
-  BetCancelled,
   BetPlaced,
   Pool,
   PoolClosed,
