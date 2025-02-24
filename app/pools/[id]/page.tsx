@@ -6,9 +6,10 @@ import { PoolStatus } from "@/lib/__generated__/graphql";
 import { shame } from "@/lib/utils";
 import { CountdownTimer } from "@/stories/CountdownTimer";
 import { CurrentSpreadCard } from "@/stories/CurrentSpreadCard";
-import { SimulateBets } from "@/stories/SimulateBets";
+import { PlaceBetCard } from "@/stories/PlaceBetCard";
 import { useQuery } from "@apollo/client";
 import { use } from "react";
+import Jazzicon from "react-jazzicon";
 
 // See BetList.tsx for the fragment, ass backwards
 
@@ -33,8 +34,8 @@ export default function PoolDetailsPage({ params }: { params: Params }) {
     <div className="mx-auto py-8 flex flex-col gap-4">
       <Card className="w-full max-w-md mx-auto">
         <CardContent className="p-6">
-          <div className="flex flex-col md:flex-row gap-6">
-            <div className="md:w-1/3">
+          <div className="flex flex-col md:flex-row gap-1">
+            <div className="md:w-1/4 flex items-center">
               {pool?.pool?.imageUrl ? (
                 <img
                   src={pool.pool.imageUrl}
@@ -47,29 +48,40 @@ export default function PoolDetailsPage({ params }: { params: Params }) {
                 <div className="bg-gray-200 rounded-lg w-full aspect-square" />
               )}
             </div>
-            <div className="md:w-2/3 flex flex-col justify-between">
-              <div>
-                <p className="text-2xl font-bold mb-1">
-                  {pool?.pool?.question}
-                </p>
-                <p className="text-gray-600">
-                  Created by: {pool?.pool?.creatorName || "Anonymous"}
-                </p>
+            <div className="md:w-3/4">
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center gap-2">
+                  <div className="h-5 w-5 flex-shrink-0">
+                    <Jazzicon
+                      diameter={20}
+                      // Use a slice of the address for the seed calculation
+                      seed={parseInt(pool?.pool?.creatorId || "0")}
+                    />
+                  </div>
+                  <span className="text-sm font-medium text-muted-foreground truncate">
+                    {pool?.pool?.creatorName}
+                  </span>
+                </div>
+                <p className="text-2xl font-bold">{pool?.pool?.question}</p>
               </div>
-              {pool?.pool?.status === PoolStatus.Pending &&
-                pool?.pool?.betsCloseAt && (
-                  <CountdownTimer betsCloseAt={pool.pool.betsCloseAt} />
-                )}
-              {pool?.pool?.status !== PoolStatus.Pending && (
-                <div className="text-red-500 font-medium">Pool is closed</div>
-              )}
             </div>
           </div>
         </CardContent>
       </Card>
 
+      <Card className="w-full max-w-md mx-auto">
+        <CardContent className="p-6 text-center">
+          {pool?.pool?.status === PoolStatus.Pending &&
+          pool?.pool?.betsCloseAt ? (
+            <CountdownTimer betsCloseAt={pool.pool.betsCloseAt} />
+          ) : (
+            <div className="text-red-500 font-medium">Pool is closed</div>
+          )}
+        </CardContent>
+      </Card>
+
       <CurrentSpreadCard poolId={id} />
-      <SimulateBets poolId={id} />
+      <PlaceBetCard poolId={id} />
     </div>
   );
 }

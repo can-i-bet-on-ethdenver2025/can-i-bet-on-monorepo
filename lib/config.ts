@@ -13,34 +13,39 @@ type ChainConfig = {
   applicationContractAddress: `0x${string}`;
   iconUrl: string;
   backgroundColor: string;
-};
+  usdcAddress: `0x${string}`;
+}
 
 // chainId -> per-chain config
 // CHANGEME WHEN ADDING A NEW CHAIN OR DEPLOYING A NEW CONTRACT
-export const CHAIN_CONFIG: Record<string, ChainConfig> = {
+  export const CHAIN_CONFIG: Record<string, ChainConfig> = {
   [baseSepolia.id]: {
     chain: baseSepolia,
     applicationContractAddress: "0x0f313f70143096f9acebdab79a8cfd10a5378e44",
     iconUrl: baseIcon,
     backgroundColor: "#0052FF",
+    usdcAddress: "0x3224f86e3e6dfC22aC1d04Ad4037e9b1983D7ba2",
   },
   [base.id]: {
     chain: base,
     applicationContractAddress: "0x0000000000000000000000000000000000000000",
     iconUrl: baseIcon,
     backgroundColor: "#0052FF",
+    usdcAddress: "0x0000000000000000000000000000000000000000",
   },
   [arbitrum.id]: {
     chain: arbitrum,
     applicationContractAddress: "0x0000000000000000000000000000000000000000",
     iconUrl: arbitrumIcon,
     backgroundColor: "#FFFFFF",
+    usdcAddress: "0x0000000000000000000000000000000000000000",
   },
   [arbitrumSepolia.id]: {
     chain: arbitrumSepolia,
     applicationContractAddress: "0x0000000000000000000000000000000000000000",
     iconUrl: arbitrumIcon,
     backgroundColor: "#FFFFFF",
+    usdcAddress: "0x0000000000000000000000000000000000000000"
   },
 };
 

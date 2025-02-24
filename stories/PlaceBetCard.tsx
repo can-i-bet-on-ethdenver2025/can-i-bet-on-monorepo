@@ -1,19 +1,24 @@
 "use client";
 
 import { GET_POOL } from "@/app/queries";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PoolStatus } from "@/lib/__generated__/graphql";
-import { shame, USDC_DECIMALS, usdcAmountToDollars } from "@/lib/utils";
+import {
+  parseChainId,
+  shame,
+  USDC_DECIMALS,
+  usdcAmountToDollars,
+} from "@/lib/utils";
+import { BetButton } from "@/stories/BetButton";
 import { useQuery } from "@apollo/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 
-interface SimulateBetsProps {
+interface PlaceBetCardProps {
   poolId: string;
 }
 
@@ -52,7 +57,7 @@ const betFormSchema = z.object({
 
 type BetFormValues = z.infer<typeof betFormSchema>;
 
-export const SimulateBets = ({ poolId }: SimulateBetsProps) => {
+export const PlaceBetCard = ({ poolId }: PlaceBetCardProps) => {
   const {
     register,
     watch,
@@ -70,6 +75,8 @@ export const SimulateBets = ({ poolId }: SimulateBetsProps) => {
   console.log("wallets", wallets);
   console.log("wallet[0]", wallets[0]);
   const betAmount = watch("betAmount");
+  const betAmountInUSDC =
+    parseFloat(betAmount || "0") * Math.pow(10, USDC_DECIMALS);
 
   const {
     data,
@@ -102,6 +109,9 @@ export const SimulateBets = ({ poolId }: SimulateBetsProps) => {
   const totalPositiveBets = data?.pool?.totalBetsByOption[0];
   const totalNegativeBets = data?.pool?.totalBetsByOption[1];
 
+  // Get chainId from wallet
+  const currentChainId = parseChainId(wallets?.[0]?.chainId || 84532);
+
   // Calculate potential earnings
   const calculateEarnings = (optionTotal: number) => {
     const bet = parseFloat(betAmount) * Math.pow(10, USDC_DECIMALS); //betAmount is written by user in dollars, so we need to convert it to USDC
@@ -118,10 +128,6 @@ export const SimulateBets = ({ poolId }: SimulateBetsProps) => {
 
   const positiveEarnings = calculateEarnings(totalPositiveBets);
   const negativeEarnings = calculateEarnings(totalNegativeBets);
-
-  const handleOptionClick = (option: string) => {
-    alert(`I would place a bet on ${option} here, if I had one`);
-  };
 
   return (
     <Card className="w-full max-w-md mx-auto">
@@ -152,37 +158,41 @@ export const SimulateBets = ({ poolId }: SimulateBetsProps) => {
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <Button
-            onClick={() => handleOptionClick(postiveOption)}
-            className="w-full h-auto py-4 flex flex-col items-center
-            border-option-a bg-option-a/30"
-            variant="outline"
-            disabled={!bettingOpen}
-          >
-            <span className="text-lg font-semibold mb-2">{postiveOption}</span>
+          <div className="flex flex-col items-center gap-2">
+            <BetButton
+              option={postiveOption}
+              optionIndex={0}
+              poolId={poolId}
+              chainId={currentChainId}
+              disabled={!bettingOpen || !!errors.betAmount}
+              isSelected={false}
+              amount={betAmountInUSDC.toString()}
+            />
             <span className="text-lg font-bold">
               {usdcAmountToDollars(positiveEarnings)}
             </span>
             <span className={"text-xs text-muted-foreground"}>
               {usdcAmountToDollars(totalPositiveBets)} bets in pool
             </span>
-          </Button>
+          </div>
 
-          <Button
-            onClick={() => handleOptionClick(negativeOption)}
-            className="w-full h-auto py-4 flex flex-col items-center
-            border-option-b bg-option-b/30"
-            disabled={!bettingOpen}
-            variant="outline"
-          >
-            <span className="text-lg font-semibold mb-2">{negativeOption}</span>
+          <div className="flex flex-col items-center gap-2">
+            <BetButton
+              option={negativeOption}
+              optionIndex={1}
+              poolId={poolId}
+              chainId={currentChainId}
+              disabled={!bettingOpen || !!errors.betAmount}
+              isSelected={false}
+              amount={betAmountInUSDC.toString()}
+            />
             <span className="text-lg font-bold">
               {usdcAmountToDollars(negativeEarnings)}
             </span>
             <span className={"text-xs text-muted-foreground"}>
               {usdcAmountToDollars(totalNegativeBets)} bets in pool
             </span>
-          </Button>
+          </div>
         </div>
       </CardContent>
     </Card>

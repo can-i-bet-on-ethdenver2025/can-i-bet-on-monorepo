@@ -1,6 +1,7 @@
 import BettingPoolsAbi from "@/contracts/out/BettingPools.sol/BettingPools.json";
+import MockUSDCAbi from "@/contracts/out/MockUSDC.sol/MockUSDC.json";
 import { CHAIN_CONFIG } from "@/lib/config";
-import { ethers } from "ethers";
+import { ethers, ZeroAddress } from "ethers";
 import { NextResponse } from "next/server";
 
 // Define the expected request type
@@ -9,7 +10,7 @@ type GenerateSigningPropsRequest = {
   poolId: string;
   optionIndex: number;
   amount: string;
-  walletAddress: string;
+  userWalletAddress: string;
 };
 
 const PRIVATE_CHAIN_CONFIG: {
@@ -33,6 +34,17 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+    if (
+      chainConfig.usdcAddress === ZeroAddress ||
+      chainConfig.applicationContractAddress === ZeroAddress
+    ) {
+      return NextResponse.json(
+        {
+          error: "Invalid chainId, no usdc and/or application contract address",
+        },
+        { status: 400 }
+      );
+    }
 
     const privateConfig = PRIVATE_CHAIN_CONFIG[body.chainId];
     if (!privateConfig) {
@@ -42,19 +54,28 @@ export async function POST(request: Request) {
       );
     }
 
-    // Setup provider and contract
+    // Setup provider and contracts
     const provider = new ethers.JsonRpcProvider(privateConfig.rpcUrl);
-    const contract = new ethers.Contract(
-      chainConfig.applicationContractAddress,
-      BettingPoolsAbi.abi,
+
+    const usdcContract = new ethers.Contract(
+      chainConfig.usdcAddress,
+      MockUSDCAbi.abi,
       provider
     );
 
-    // Return the input parameters plus contract info
-    // (In a real implementation, you'd use these to generate signatures)
+    // Get USDC nonce for the user
+    const nonce = await usdcContract.nonces(body.userWalletAddress);
+
+    // Get PERMIT_TYPEHASH from USDC contract
+    const PERMIT_TYPEHASH = await usdcContract.PERMIT_TYPEHASH();
+
+    // Return the input parameters plus contract info and USDC details
     return NextResponse.json({
       ...body,
       applicationContractAddress: chainConfig.applicationContractAddress,
+      usdcContractAddress: chainConfig.usdcAddress,
+      usdcNonce: nonce.toString(),
+      usdcPermitTypehash: PERMIT_TYPEHASH,
       rpcUrl: privateConfig.rpcUrl,
     });
   } catch (error) {

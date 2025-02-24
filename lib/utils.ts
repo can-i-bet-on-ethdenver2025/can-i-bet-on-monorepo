@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { CHAIN_CONFIG } from "./config";
 export const USDC_DECIMALS = 6;
 
 export function cn(...inputs: ClassValue[]) {
@@ -63,7 +64,21 @@ export const bigintToHexString = (n: bigint) => {
   return n.toString(16);
 };
 
-
 export const shame = (t: string) => {
   return t.indexOf("0x0") === 0 ? t : `0x0${t}`;
+};
+
+export const parseChainId = (chainId: number | string) => {
+  let parsedChainId = chainId;
+  if (typeof chainId === "string") {
+    parsedChainId = chainId.replace("eip155:", "");
+  }
+
+  // If chain config doesn't exist, fallback to Base Sepolia
+  // TODO Disgusting
+  if (!CHAIN_CONFIG[parsedChainId]) {
+    parsedChainId = 84532;
+  }
+
+  return parsedChainId;
 };

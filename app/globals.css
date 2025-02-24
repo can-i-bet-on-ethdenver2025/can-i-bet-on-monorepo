@@ -40,10 +40,10 @@ body {
     --card-foreground: 0 0% 95%;
     --popover: 0 0% 9%;
     --popover-foreground: 0 0% 95%;
-    --primary: 142.1 70.6% 45.3%;
-    --primary-foreground: 144.9 80.4% 10%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
+    --primary: 270 100% 50%; /*#7F00FF*/
+    --primary-foreground: 0 0% 95%;/*#F2F2F2*/
+    --secondary: 96 100% 50%;/*#65FF00*/
+    --secondary-foreground: 111 80% 10%;/*#0B2D05*/
     --muted: 0 0% 15%;
     --muted-foreground: 240 5% 64.9%;
     --accent: 12 6.5% 15.1%;
@@ -58,9 +58,12 @@ body {
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
-    --option-a-color: 333 100% 50%;
-    --option-b-color: 32 100% 50%;
-  }
+    --option-a-color: 200 100% 50%;/*#00A9FF*/
+    --option-b-color: 0 100% 50%;/*#FF0000*/
+    --option-c-color: 32 100% 50;/*#FF8800*/
+    --option-d-color:  333 100% 50%; /*#FF0072 */
+    --option-e-color: 240 100% 50%;/*#0000FF*/
+  } 
 
   .dark {
     --background: 20 14.3% 4.1%;
@@ -69,19 +72,10 @@ body {
     --card-foreground: 0 0% 95%;
     --popover: 0 0% 9%;
     --popover-foreground: 0 0% 95%;
-    /* --primary: 142.1 70.6% 45.3%; */
-    --primary: 270 100% 50%;
-    /* --primary: 266 100% 49%; */
-    --primary-foreground: 0 0% 95%;
-    --secondary: 96 100% 50%;
-    --secondary-foreground: 111 80% 10%;
-    /* HSL(262, 100%, 71%) */
-    /* HSL(266, 100%, 49%) */
-    /* HSL(266, 100%, 80%) */
-    /* 1.	#ff006f → HSL(333, 100%, 50%) //Triadic */
-    /* 2.	#ff9100 → HSL(32, 100%, 50%) //Triadic */
-    /* #6fff00 → HSL(96, 100%, 50%) //Complementary */
-    /* 4. #3cfd00 → HSL(111, 100%, 50%) //"Softer" Complementary */
+    --primary: 270 100% 50%; /*#7F00FF*/
+    --primary-foreground: 0 0% 95%;/*#F2F2F2*/
+    --secondary: 96 100% 50%;/*#65FF00*/
+    --secondary-foreground: 111 80% 10%;/*#0B2D05*/
     --muted: 0 0% 15%;
     --muted-foreground: 240 5% 64.9%;
     --accent: 12 6.5% 15.1%;
@@ -91,13 +85,16 @@ body {
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
     --ring: 142.4 71.8% 29.2%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-    --option-a-color: 333 100% 50%;
-    --option-b-color: 32 100% 50%;
+    --chart-1: 220 70% 50%; /*#2661D8*/
+    --chart-2: 160 60% 45%; /*#2DB789*/
+    --chart-3: 30 80% 55%; /*#E88C30*/
+    --chart-4: 280 65% 60%;/*#AF56DB*/
+    --chart-5: 340 75% 55%;/*#E2366F*/
+    --option-a-color: 200 100% 50%;/*#00A9FF*/
+    --option-b-color: 0 100% 50%;/*#FF0000*/
+    --option-c-color: 32 100% 50;/*#FF8800*/
+    --option-d-color:  333 100% 50%; /*#FF0072 */
+    --option-e-color: 240 100% 50%;/*#0000FF*/
   }
 }
 
@@ -127,3 +124,14 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+/* Alternate color archive*/
+/* HSL(262, 100%, 71%) */
+/* HSL(266, 100%, 49%) */
+/* HSL(266, 100%, 80%) */
+/* 1.	#ff006f → HSL(333, 100%, 50%) //Triadic */
+/* 2.	#ff9100 → HSL(32, 100%, 50%) //Triadic */
+/* #6fff00 → HSL(96, 100%, 50%) //Complementary */
+/* 4. #3cfd00 → HSL(111, 100%, 50%) //"Softer" Complementary */
+ /* --primary: HSL(142.1 70.6% 45.3%); */
+ /* --primary: HSL(266 100% 49%); */

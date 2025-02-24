@@ -2,7 +2,7 @@ import { GET_POOL } from "@/app/queries";
 import { Pool, PoolStatus } from "@/lib/__generated__/graphql";
 import { MockedProvider } from "@apollo/client/testing";
 import type { Meta, StoryObj } from "@storybook/react";
-import { SimulateBets } from "./SimulateBets";
+import { PlaceBetCard } from "./PlaceBetCard";
 
 const mocks = [
   {
@@ -45,23 +45,36 @@ const mocks = [
   },
 ];
 
-const meta: Meta<typeof SimulateBets> = {
+const meta: Meta<typeof PlaceBetCard> = {
   title: "Components/SimulateBets",
-  component: SimulateBets,
+  component: PlaceBetCard,
   decorators: [
     (Story) => (
       <MockedProvider mocks={mocks} addTypename={false}>
-        <Story />
+        <div data-testid="mock-wallet-context">
+          <Story />
+        </div>
       </MockedProvider>
     ),
   ],
   parameters: {
     layout: "centered",
+    mockData: {
+      wallets: {
+        ready: true,
+        wallets: [
+          {
+            address: "0x1234567890123456789012345678901234567890",
+            chainId: "84532",
+          },
+        ],
+      },
+    },
   },
 };
 
 export default meta;
-type Story = StoryObj<typeof SimulateBets>;
+type Story = StoryObj<typeof PlaceBetCard>;
 
 export const Default: Story = {
   args: {

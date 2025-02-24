@@ -53,6 +53,9 @@ export default {
         },
         "option-a": "hsl(var(--option-a-color))",
         "option-b": "hsl(var(--option-b-color))",
+        "option-c": "hsl(var(--option-c-color))",
+        "option-d": "hsl(var(--option-d-color))",
+        "option-e": "hsl(var(--option-e-color))",
       },
       borderRadius: {
         lg: "var(--radius)",
