@@ -6,7 +6,7 @@ import BetCard from "@/stories/BetCard";
 import { useQuery } from "@apollo/client";
 import { Search } from "lucide-react";
 import { FC } from "react";
-import { BottomNav } from "./BottomNav";
+import { BottomNav } from "../stories/BottomNav";
 
 interface HomePageProps {
   title?: string;

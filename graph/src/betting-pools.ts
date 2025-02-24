@@ -3,6 +3,7 @@ import {
   BetPlaced as BetPlacedEvent,
   PoolClosed as PoolClosedEvent,
   PoolCreated as PoolCreatedEvent,
+  TwitterPostIdSet as TwitterPostIdSetEvent,
 } from "../generated/BettingPools/BettingPools";
 import {
   Bet,
@@ -10,6 +11,7 @@ import {
   Pool,
   PoolClosed,
   PoolCreated,
+  TwitterPostIdSet,
 } from "../generated/schema";
 
 const chainIdToNetworkName = (networkName: string): i32 => {
@@ -171,7 +173,7 @@ export function handlePoolCreated(event: PoolCreatedEvent): void {
   pool.chainName = networkName;
   pool.chainId = BigInt.fromI32(chainId as i32);
   pool.isDraw = false;
-
+  pool.xPostId = "";
   // Set initial timestamps
   pool.createdBlockNumber = event.block.number;
   pool.createdBlockTimestamp = event.block.timestamp;
@@ -186,6 +188,29 @@ export function handlePoolCreated(event: PoolCreatedEvent): void {
   pool.gradedBlockNumber = BigInt.fromI32(0);
   pool.gradedBlockTimestamp = BigInt.fromI32(0);
   pool.gradedTransactionHash = Bytes.empty();
+
+  pool.save();
+  entity.save();
+}
+
+export function handleTwitterPostIdSet(event: TwitterPostIdSetEvent): void {
+  const poolId = Bytes.fromByteArray(Bytes.fromBigInt(event.params.poolId));
+
+  const entity = new TwitterPostIdSet(poolId);
+  entity.poolIntId = event.params.poolId;
+  entity.poolIdHex = poolId;
+  entity.xPostId = event.params.twitterPostId;
+  entity.pool = poolId;
+
+  const pool = Pool.load(poolId);
+  if (pool == null) {
+    throw new Error("Pool not found");
+  }
+  pool.xPostId = event.params.twitterPostId;
+
+  pool.lastUpdatedBlockNumber = event.block.number;
+  pool.lastUpdatedBlockTimestamp = event.block.timestamp;
+  pool.lastUpdatedTransactionHash = event.transaction.hash;
 
   pool.save();
   entity.save();

@@ -64,24 +64,30 @@ export const CountdownTimer = ({
 
   return (
     <div className={`flex flex-col items-center ${className}`}>
-      <div className="text-base font-medium mb-1">
-        Time left before bets close
-      </div>
-      <div className="text-4xl font-bold flex">
-        <AnimatePresence mode="popLayout">
-          {timeDigits.map((digit, index) => (
-            <motion.span
-              key={`${index}-${digit}`}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.15 }}
-              className={digit === ":" ? "mx-1" : "tabular-nums"}
-            >
-              {digit}
-            </motion.span>
-          ))}
-        </AnimatePresence>
+      <div className="flex flex-col items-center w-full">
+        <p className="text-sm text-center">
+          Bets close at{" "}
+          {new Date(betsCloseAt * 1000).toLocaleString(undefined, {
+            dateStyle: "short",
+            timeStyle: "short",
+          })}
+        </p>
+        <div className="text-4xl font-bold flex justify-center">
+          <AnimatePresence mode="popLayout">
+            {timeDigits.map((digit, index) => (
+              <motion.span
+                key={`${index}-${digit}`}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.15 }}
+                className={digit === ":" ? "mx-1" : "tabular-nums"}
+              >
+                {digit}
+              </motion.span>
+            ))}
+          </AnimatePresence>
+        </div>
       </div>
     </div>
   );

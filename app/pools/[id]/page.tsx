@@ -7,9 +7,9 @@ import { shame } from "@/lib/utils";
 import { CountdownTimer } from "@/stories/CountdownTimer";
 import { CurrentSpreadCard } from "@/stories/CurrentSpreadCard";
 import { PlaceBetCard } from "@/stories/PlaceBetCard";
+import TweetCard from "@/stories/TweetCard";
 import { useQuery } from "@apollo/client";
 import { use } from "react";
-import Jazzicon from "react-jazzicon";
 
 // See BetList.tsx for the fragment, ass backwards
 
@@ -32,7 +32,8 @@ export default function PoolDetailsPage({ params }: { params: Params }) {
 
   return (
     <div className="mx-auto py-8 flex flex-col gap-4">
-      <Card className="w-full max-w-md mx-auto">
+      <TweetCard poolId={id} className="w-full max-w-md mx-auto" />
+      {/* <Card className="w-full max-w-md mx-auto">
         <CardContent className="p-6">
           <div className="flex flex-col md:flex-row gap-1">
             <div className="md:w-1/4 flex items-center">
@@ -50,24 +51,16 @@ export default function PoolDetailsPage({ params }: { params: Params }) {
             </div>
             <div className="md:w-3/4">
               <div className="flex flex-col gap-4">
-                <div className="flex items-center gap-2">
-                  <div className="h-5 w-5 flex-shrink-0">
-                    <Jazzicon
-                      diameter={20}
-                      // Use a slice of the address for the seed calculation
-                      seed={parseInt(pool?.pool?.creatorId || "0")}
-                    />
-                  </div>
-                  <span className="text-sm font-medium text-muted-foreground truncate">
-                    {pool?.pool?.creatorName}
-                  </span>
-                </div>
+                <CreatorInfo
+                  creatorId={pool?.pool?.creatorId || "0"}
+                  creatorName={pool?.pool?.creatorName || ""}
+                />
                 <p className="text-2xl font-bold">{pool?.pool?.question}</p>
               </div>
             </div>
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
       <Card className="w-full max-w-md mx-auto">
         <CardContent className="p-6 text-center">
