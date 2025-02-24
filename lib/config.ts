@@ -43,3 +43,11 @@ export const CHAIN_CONFIG: Record<string, ChainConfig> = {
     backgroundColor: "#FFFFFF",
   },
 };
+
+export const optionColor: Array<string> = [
+  "option-a",
+  "option-b",
+  "option-c",
+  "option-d",
+  "option-e",
+];

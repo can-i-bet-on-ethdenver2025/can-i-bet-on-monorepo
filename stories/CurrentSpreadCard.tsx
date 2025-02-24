@@ -1,11 +1,11 @@
+import { GET_POOL } from "@/app/queries";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { GET_POOL } from "@/app/queries";
+import { optionColor } from "@/lib/config";
 import { shame, usdcAmountToDollars } from "@/lib/utils";
 import { useQuery } from "@apollo/client";
 import { FC } from "react";
 import { RatioBar } from "./RatioBar";
-
 interface CurrentSpreadCardProps {
   poolId: string;
 }
@@ -66,31 +66,28 @@ export const CurrentSpreadCard: FC<CurrentSpreadCardProps> = ({ poolId }) => {
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
-        <CardTitle>Current Spread</CardTitle>
+        <CardTitle className={"text-center"}>Current Spread</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="flex flex-col items-center text-sm text-gray-500 text-center">
+        <div className="flex flex-col items-center">
           <RatioBar items={ratioItems} className="mb-2" />
 
-          <div>{`Total bets: ${data?.pool?.totalBets || 0}`}</div>
+          <div className="text-center">
+            {`Total bets: ${usdcAmountToDollars(data?.pool?.totalBets || 0)}`}
+          </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="flex-col gap-4">
           {data?.pool?.options.map((option: string, index: number) => (
-            <div
-              key={index}
-              className={`w-full py-4 px-3 flex flex-col items-center rounded-lg border
-                ${
-                  index === 0
-                    ? "border-option-a bg-option-a/30"
-                    : "border-option-b bg-option-b/30"
-                }`}
-            >
-              <span className="text-lg font-semibold mb-2">{option}</span>
-              <span className="text-lg font-bold">
+            <div key={index} className="flex">
+              <div
+                className={`text-lg font-bold mb-2 text-${optionColor[index]}`}
+              >
+                {option}
+              </div>
+              <div className="text-lg font-semibold ml-auto">
                 {usdcAmountToDollars(data?.pool?.totalBetsByOption[index] || 0)}
-              </span>
-              <span className="text-xs text-muted-foreground">total bets</span>
+              </div>
             </div>
           ))}
         </div>

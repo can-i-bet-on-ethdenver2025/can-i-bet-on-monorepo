@@ -21,10 +21,11 @@ export function NetworkButton({
     parsedChainId = chainId.replace("eip155:", "");
   }
 
-  const chainConfig = CHAIN_CONFIG[parsedChainId];
+  let chainConfig = CHAIN_CONFIG[parsedChainId];
 
   if (!chainConfig) {
     parsedChainId = 84532; //TODO Disgusting hack
+    chainConfig = CHAIN_CONFIG[parsedChainId];
     // console.error(
     // `No configuration found for chain ID: ${chainId} (parsed: ${parsedChainId})`
     // );

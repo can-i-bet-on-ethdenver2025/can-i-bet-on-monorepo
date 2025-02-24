@@ -126,7 +126,7 @@ export const SimulateBets = ({ poolId }: SimulateBetsProps) => {
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
-        <CardTitle>Simulate Your Bet</CardTitle>
+        <CardTitle className={"text-center"}>Place a Bet</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div>

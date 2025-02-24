@@ -94,8 +94,12 @@ export const GET_POOL = gql(`
     pool( id: $poolId ) {
       id
       poolIntId
+      imageUrl
+      creatorName
+      creatorId
       question
       options
+      betsCloseAt
       totalBets
       totalBetsByOption
       selectedOption

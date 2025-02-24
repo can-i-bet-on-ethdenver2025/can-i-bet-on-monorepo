@@ -4,6 +4,7 @@ import { GET_POOL } from "@/app/queries";
 import { Card, CardContent } from "@/components/ui/card";
 import { PoolStatus } from "@/lib/__generated__/graphql";
 import { shame } from "@/lib/utils";
+import { CountdownTimer } from "@/stories/CountdownTimer";
 import { CurrentSpreadCard } from "@/stories/CurrentSpreadCard";
 import { SimulateBets } from "@/stories/SimulateBets";
 import { useQuery } from "@apollo/client";
@@ -29,39 +30,44 @@ export default function PoolDetailsPage({ params }: { params: Params }) {
   console.log("pool", pool);
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="text-2xl text-center font-bold">
-        {pool?.pool?.question}
-      </div>
-      {/* <div className="flex justify-between items-center mb-4">
-        <div className="text-sm text-gray-600">
-          <a
-            href={`https://x.com/search?q=${id}`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <span className="text-blue-500 hover:underline">
-              LINK TO X, WOW
-            </span>
-          </a>
-        </div>
-      </div> */}
-      {/* TODO Flawed logic, will not work w/ new statuses */}
-      {pool?.pool?.status !== PoolStatus.Pending && (
-        <div className="bg-gray-800">
-          <div className="text-white">
-            <p>Pool is closed</p>
+    <div className="mx-auto py-8 flex flex-col gap-4">
+      <Card className="w-full max-w-md mx-auto">
+        <CardContent className="p-6">
+          <div className="flex flex-col md:flex-row gap-6">
+            <div className="md:w-1/3">
+              {pool?.pool?.imageUrl ? (
+                <img
+                  src={pool.pool.imageUrl}
+                  alt={pool.pool.question.slice(0, 10) || "Pool image"}
+                  width={300}
+                  height={300}
+                  className="rounded-lg w-full h-auto object-cover"
+                />
+              ) : (
+                <div className="bg-gray-200 rounded-lg w-full aspect-square" />
+              )}
+            </div>
+            <div className="md:w-2/3 flex flex-col justify-between">
+              <div>
+                <p className="text-2xl font-bold mb-1">
+                  {pool?.pool?.question}
+                </p>
+                <p className="text-gray-600">
+                  Created by: {pool?.pool?.creatorName || "Anonymous"}
+                </p>
+              </div>
+              {pool?.pool?.status === PoolStatus.Pending &&
+                pool?.pool?.betsCloseAt && (
+                  <CountdownTimer betsCloseAt={pool.pool.betsCloseAt} />
+                )}
+              {pool?.pool?.status !== PoolStatus.Pending && (
+                <div className="text-red-500 font-medium">Pool is closed</div>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        </CardContent>
+      </Card>
 
-      {pool?.pool?.status === PoolStatus.Pending && (
-        <Card className={"text-center"}>
-          <CardContent>
-            <p className={"text-xl"}>00:15:00 left before bets close</p>
-          </CardContent>
-        </Card>
-      )}
       <CurrentSpreadCard poolId={id} />
       <SimulateBets poolId={id} />
     </div>
