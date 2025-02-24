@@ -24,9 +24,6 @@ export const Navbar = () => {
   // Get the chain ID from the first wallet if available
   const currentChainId = wallets?.[0]?.chainId;
 
-  const networkButton = currentChainId && (
-    <NetworkButton chainId={currentChainId} size="small" />
-  );
 
   return (
     <nav className="border-b">
@@ -47,7 +44,9 @@ export const Navbar = () => {
           <NavbarLink href="/activity">
             Recent activity (NOT IMPLEMENTED)
           </NavbarLink>
-          {ready && authenticated && networkButton}
+          {ready && authenticated && (
+            <NetworkButton chainId={currentChainId} size="small" />
+          )}
           {ready && authenticated ? (
             <PrivyLogoutButton />
           ) : (
@@ -73,7 +72,9 @@ export const Navbar = () => {
             <NavbarLink href="/activity">
               Recent activity (NOT IMPLEMENTED)
             </NavbarLink>
-            {ready && authenticated && networkButton}
+            {ready && authenticated && (
+              <NetworkButton chainId={currentChainId} size="small" />
+            )}
             {ready && authenticated ? (
               <div>
                 <PrivyLogoutButton />

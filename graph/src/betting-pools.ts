@@ -1,4 +1,4 @@
-import { BigInt, Bytes } from "@graphprotocol/graph-ts";
+import { BigInt, Bytes, dataSource } from "@graphprotocol/graph-ts";
 import {
   BetPlaced as BetPlacedEvent,
   PoolClosed as PoolClosedEvent,
@@ -12,10 +12,29 @@ import {
   PoolCreated,
 } from "../generated/schema";
 
+const chainIdToNetworkName = (networkName: string): i32 => {
+  if (networkName == "base-sepolia") return 84532;
+  if (networkName == "base") return 8453;
+  if (networkName == "base-mainnet") return 8453;
+  if (networkName == "mainnet") return 1;
+  if (networkName == "sepolia") return 11155111;
+  if (networkName == "arbitrum-sepolia") return 421614;
+  if (networkName == "arbitrum") return 42161;
+  if (networkName == "arbitrum-mainnet") return 42161;
+  if (networkName == "optimism-sepolia") return 111550111;
+  if (networkName == "optimism") return 10;
+  if (networkName == "optimism-mainnet") return 10;
+
+  throw new Error(`Network ${networkName} not supported`);
+};
+
 export function handleBetPlaced(event: BetPlacedEvent): void {
+  // dataSource.network()
   const betId = Bytes.fromByteArray(Bytes.fromBigInt(event.params.betId));
   const poolId = Bytes.fromByteArray(Bytes.fromBigInt(event.params.poolId));
 
+  const networkName = dataSource.network();
+  const chainId = chainIdToNetworkName(networkName);
   // Create BetPlaced entity
   const entity = new BetPlaced(betId);
   entity.betId = event.params.betId;
@@ -26,6 +45,8 @@ export function handleBetPlaced(event: BetPlacedEvent): void {
   entity.blockNumber = event.block.number;
   entity.blockTimestamp = event.block.timestamp;
   entity.transactionHash = event.transaction.hash;
+  entity.chainName = networkName;
+  entity.chainId = BigInt.fromI32(chainId as i32);
 
   const poolCreated = PoolCreated.load(poolId);
   if (poolCreated == null) {
@@ -47,6 +68,8 @@ export function handleBetPlaced(event: BetPlacedEvent): void {
   bet.blockNumber = event.block.number;
   bet.blockTimestamp = event.block.timestamp;
   bet.transactionHash = event.transaction.hash;
+  bet.chainName = networkName;
+  bet.chainId = BigInt.fromI32(chainId as i32);
 
   // Update Pool totals and timestamps
   const pool = Pool.load(poolId);
@@ -73,6 +96,9 @@ export function handleBetPlaced(event: BetPlacedEvent): void {
 export function handlePoolClosed(event: PoolClosedEvent): void {
   const poolId = Bytes.fromByteArray(Bytes.fromBigInt(event.params.poolId));
 
+  const networkName = dataSource.network();
+  const chainId = chainIdToNetworkName(networkName);
+
   // Create PoolClosed entity
   const entity = new PoolClosed(poolId);
   entity.poolId = event.params.poolId;
@@ -80,6 +106,8 @@ export function handlePoolClosed(event: PoolClosedEvent): void {
   entity.blockNumber = event.block.number;
   entity.blockTimestamp = event.block.timestamp;
   entity.transactionHash = event.transaction.hash;
+  entity.chainName = networkName;
+  entity.chainId = BigInt.fromI32(chainId as i32);
 
   // Update Pool status and timestamps
   const pool = Pool.load(poolId);
@@ -101,6 +129,9 @@ export function handlePoolClosed(event: PoolClosedEvent): void {
 export function handlePoolCreated(event: PoolCreatedEvent): void {
   const poolId = Bytes.fromByteArray(Bytes.fromBigInt(event.params.poolId));
 
+  const networkName = dataSource.network();
+  const chainId = chainIdToNetworkName(networkName);
+
   // Create PoolCreated entity
   const entity = new PoolCreated(poolId);
   entity.poolId = event.params.poolId;
@@ -117,6 +148,8 @@ export function handlePoolCreated(event: PoolCreatedEvent): void {
   entity.blockNumber = event.block.number;
   entity.blockTimestamp = event.block.timestamp;
   entity.transactionHash = event.transaction.hash;
+  entity.chainName = networkName;
+  entity.chainId = BigInt.fromI32(chainId as i32);
 
   // Create new Pool entity
   const pool = new Pool(poolId);
@@ -135,6 +168,8 @@ export function handlePoolCreated(event: PoolCreatedEvent): void {
   pool.closureInstructions = event.params.params.closureInstructions;
   pool.betsCloseAt = event.params.params.betsCloseAt;
   pool.decisionDate = event.params.params.decisionDate;
+  pool.chainName = networkName;
+  pool.chainId = BigInt.fromI32(chainId as i32);
   pool.isDraw = false;
 
   // Set initial timestamps

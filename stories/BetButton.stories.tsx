@@ -18,6 +18,9 @@ const meta: Meta<typeof BetButton> = {
     isSelected: {
       control: "boolean",
     },
+    poolId: {
+      control: "text",
+    },
   },
 };
 
@@ -29,6 +32,7 @@ export const OptionA: Story = {
     option: "Yes",
     optionIndex: 0,
     isSelected: false,
+    poolId: "pool-123",
   },
 };
 
@@ -37,6 +41,7 @@ export const OptionASelected: Story = {
     option: "Yes",
     optionIndex: 0,
     isSelected: true,
+    poolId: "pool-123",
   },
 };
 
@@ -45,6 +50,7 @@ export const OptionB: Story = {
     option: "No",
     optionIndex: 1,
     isSelected: false,
+    poolId: "pool-123",
   },
 };
 
@@ -53,5 +59,6 @@ export const OptionBSelected: Story = {
     option: "No",
     optionIndex: 1,
     isSelected: true,
+    poolId: "pool-123",
   },
 };

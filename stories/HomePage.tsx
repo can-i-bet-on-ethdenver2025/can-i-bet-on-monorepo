@@ -2,11 +2,9 @@
 import { GET_POOLS } from "@/app/queries";
 import { Input } from "@/components/ui/input";
 import { OrderDirection, Pool_OrderBy } from "@/lib/__generated__/graphql";
-import PromptBetLogo from "@/stories/assets/promptbet-logo.png";
 import BetCard from "@/stories/BetCard";
 import { useQuery } from "@apollo/client";
 import { Search } from "lucide-react";
-import Image from "next/image";
 import { FC } from "react";
 import { BottomNav } from "./BottomNav";
 
@@ -40,16 +38,6 @@ export const HomePage: FC<HomePageProps> = ({
 
   return (
     <main className="min-h-screen pb-16 md:pb-0">
-      <section className="relative min-h-[32vh] sm:min-h-[80vh] md:min-h-[90vh] flex items-center justify-center bg-primary px-4 py-4 md:py-0">
-  
-
-        {/* Decorative Elements */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/4 right-0 w-16 md:w-64 h-16 md:h-64 bg-purple-400 rounded-full opacity-20 blur-3xl" />
-          <div className="absolute bottom-1/4 left-0 w-16 md:w-64 h-16 md:h-64 bg-violet-400 rounded-full opacity-20 blur-3xl" />
-        </div>
-      </section>
-
       {/* Search Section */}
       <section className="py-8 md:py-12 px-2 md:px-4">
         <div className="container mx-auto max-w-3xl">

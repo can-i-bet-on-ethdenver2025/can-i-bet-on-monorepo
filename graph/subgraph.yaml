@@ -8,9 +8,9 @@ dataSources:
     name: BettingPools
     network: base-sepolia
     source:
-      address: "0xd3F781dc236Ab6EABB1eBE93263Ee09565A98e1f"
+      address: "0x0f313f70143096f9acebdab79a8cfd10a5378e44"
       abi: BettingPools
-      startBlock: 22290736
+      startBlock: 22294512
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.9

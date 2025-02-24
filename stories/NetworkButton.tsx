@@ -24,10 +24,11 @@ export function NetworkButton({
   const chainConfig = CHAIN_CONFIG[parsedChainId];
 
   if (!chainConfig) {
-    console.error(
-      `No configuration found for chain ID: ${chainId} (parsed: ${parsedChainId})`
-    );
-    return null;
+    parsedChainId = 84532; //TODO Disgusting hack
+    // console.error(
+    // `No configuration found for chain ID: ${chainId} (parsed: ${parsedChainId})`
+    // );
+    // return null;
   }
 
   return (

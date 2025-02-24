@@ -126,9 +126,11 @@ const BetCard = ({ pool }: BetCardProps) => {
               return (
                 <div key={index} className="flex flex-col items-center gap-1">
                   <BetButton
+                    chainId={pool.chainId}
                     option={option}
                     optionIndex={index}
                     isSelected={isSelected}
+                    poolId={pool.id}
                   />
                   <span className="text-sm text-muted-foreground">
                     {usdcAmountToDollars(pool.totalBetsByOption[index])}

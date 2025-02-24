@@ -31,6 +31,8 @@ export const GET_POOLS = gql(`
       closureInstructions
       betsCloseAt
       decisionDate
+      chainId
+      chainName
       isDraw
       createdBlockNumber
       createdBlockTimestamp
@@ -79,8 +81,28 @@ export const GET_BETS = gql(`
       creatorId
       creatorName
       imageUrl
+      chainId
+      chainName
       isDraw
       }
+    }
+  }
+`);
+
+export const GET_POOL = gql(`
+  query GetPool($poolId: ID!) {
+    pool( id: $poolId ) {
+      id
+      poolIntId
+      question
+      options
+      totalBets
+      totalBetsByOption
+      selectedOption
+      status
+      chainId
+      chainName
+      isDraw
     }
   }
 `);
