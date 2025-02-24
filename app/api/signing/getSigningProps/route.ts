@@ -81,6 +81,7 @@ export async function POST(request: Request) {
       usdcNonce: nonce.toString(),
       usdcPermitTypehash: PERMIT_TYPEHASH,
       rpcUrl: privateConfig.rpcUrl,
+      usdcName: await usdcContract.name(),
     });
   } catch (error) {
     console.error("Error in generateSigningProps:", error);
