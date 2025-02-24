@@ -1,8 +1,45 @@
 //TODO Doesn't support Option A or B, hardcoded to Yes and No
 import { CHAIN_CONFIG, optionColor } from "@/lib/config";
 import { cn } from "@/lib/utils";
-import { useWallets } from "@privy-io/react-auth";
+import { useWallets, ConnectedWallet } from "@privy-io/react-auth";
 import { useState } from "react";
+import { Chain } from "viem/chains";
+import { ethers } from "ethers";
+import usdcAbi from "@/contracts/out/MockUSDC.sol/MockUSDC.json";
+
+// Add type definitions
+type ChainConfig = {
+  chain: Chain;
+  applicationContractAddress: `0x${string}`;
+  iconUrl: string;
+  backgroundColor: string;
+  usdcAddress: `0x${string}`;
+};
+
+// EIP-712 domain type
+type Domain = {
+  name: string;
+  version: string;
+  chainId: number;
+  verifyingContract: string;
+};
+
+// EIP-712 types
+type TypedDataField = {
+  name: string;
+  type: string;
+};
+
+type RpcRequest = {
+  method: 'eth_signTypedData_v4';
+  params: [string, string]; // [address, stringified typed data]
+};
+
+type ExtendedConnectedWallet = ConnectedWallet & {
+  getEthereumProvider: () => Promise<{
+    request: (request: RpcRequest) => Promise<string>;
+  }>;
+};
 
 type BetButtonProps = {
   option: string;
@@ -23,6 +60,7 @@ export const BetButton = ({
   disabled,
   amount,
 }: BetButtonProps) => {
+  const [isLoading, setIsLoading] = useState(false);
   const walletData = useWallets();
 
   // In Storybook/development, use mock data if real data isn't available
@@ -84,8 +122,6 @@ export const BetButton = ({
     );
   }
 
-  const [isLoading, setIsLoading] = useState(false);
-
   const handleClick = async () => {
     try {
       setIsLoading(true);
@@ -112,29 +148,87 @@ export const BetButton = ({
           `Failed to get signing props: ${signingResponse.statusText}`
         );
       }
-//TODO SIGN WITH PRIVY RIGHT HERE
+
       const signingData = await signingResponse.json();
       console.log("Received signing parameters:", signingData);
 
-      // For now, we'll use mock signature data
-      // In production, you would generate real signatures here
-      const mockSignedData = {
+      // Generate USDC permit signature using Privy wallet
+      const wallet = wallets[0] as ExtendedConnectedWallet;
+      if (!wallet?.getEthereumProvider) {
+        throw new Error("Wallet does not support Ethereum provider");
+      }
+
+      // Log the wallet address
+      console.log('Wallet Address', wallet.address)
+
+      // Print the current USDC balance of the wallet for the USDC ERC20 token
+      const provider = await wallet.getEthereumProvider();
+
+      const usdcPermitDeadline = Math.floor(Date.now() / 1000) + 3600; // 1 hour from now
+
+      // EIP-712 typed data for USDC permit
+      const domain = {
+        name: "USDC", // TODO: change this to USD Coin for mainnet
+        version: "2",
+        chainId: Number(chainId),
+        verifyingContract: chainConfig.usdcAddress,
+      };
+
+      const types = {
+        Permit: [
+          { name: "owner", type: "address" },
+          { name: "spender", type: "address" },
+          { name: "value", type: "uint256" },
+          { name: "nonce", type: "uint256" },
+          { name: "deadline", type: "uint256" },
+        ],
+      };
+
+      const permitMessage = {
+        owner: wallet.address,
+        spender: chainConfig.applicationContractAddress,
+        value: amount,
+        nonce: signingData.usdcNonce,
+        deadline: usdcPermitDeadline,
+      };
+
+      console.log('Permit data to sign', permitMessage);
+
+      // Sign the USDC permit using eth_signTypedData_v4
+      const permitSignature = await provider.request({
+        method: 'eth_signTypedData_v4',
+        params: [
+          wallet.address,
+          JSON.stringify({
+            types,
+            primaryType: 'Permit',
+            domain,
+            message: permitMessage,
+          }),
+        ],
+      });
+
+      // Parse the signature into v, r, s using ethers
+      const sig = ethers.Signature.from(permitSignature);
+      const { v, r, s } = sig;
+
+      // Send the signed data to the backend
+      const signedData = {
         chainId,
         poolId,
         optionIndex,
         amount,
-        walletAddress: wallets?.[0]?.address,
-        permitSignature: { v: 27, r: "0x0", s: "0x0" },
-        betSignature: { v: 27, r: "0x0", s: "0x0" },
-        usdcPermitDeadline: Math.floor(Date.now() / 1000) + 3600, // 1 hour from now
+        walletAddress: wallet.address,
+        permitSignature: { v, r, s },
+        usdcPermitDeadline,
       };
 
-      console.log("Sending signed transaction:", mockSignedData);
+      console.log("Sending signed transaction:", signedData);
 
       const txResponse = await fetch("/api/signing/sendSignedPlaceBet", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(mockSignedData),
+        body: JSON.stringify(signedData),
       });
 
       if (!txResponse.ok) {
