@@ -24,7 +24,7 @@ export const GET_POOLS = gql(`
       status
       imageUrl
       category
-      creatorAddress
+      
       creatorName
       creatorId
       closureCriteria

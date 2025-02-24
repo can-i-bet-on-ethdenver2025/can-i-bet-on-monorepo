@@ -101,7 +101,7 @@ const BetCard = ({ pool }: BetCardProps) => {
                   <Jazzicon
                     diameter={20}
                     // Use a slice of the address for the seed calculation
-                    seed={parseInt(pool.creatorAddress.slice(2, 10), 16)}
+                    seed={parseInt(pool.creatorId)}
                   />
                 </div>
                 <span className="text-sm font-medium text-muted-foreground truncate">

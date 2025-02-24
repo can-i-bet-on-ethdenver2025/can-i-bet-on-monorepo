@@ -15,13 +15,18 @@ export function NetworkButton({
   onClick,
   size = "default",
 }: NetworkButtonProps) {
-  if (typeof chainId !== "number") {
-  
+  let parsedChainId = chainId;
+
+  if (typeof chainId === "string") {
+    parsedChainId = chainId.replace("eip155:", "");
   }
-  const chainConfig = CHAIN_CONFIG[chainId];
+
+  const chainConfig = CHAIN_CONFIG[parsedChainId];
 
   if (!chainConfig) {
-    console.error(`No configuration found for chain ID: ${chainId}`);
+    console.error(
+      `No configuration found for chain ID: ${chainId} (parsed: ${parsedChainId})`
+    );
     return null;
   }
 

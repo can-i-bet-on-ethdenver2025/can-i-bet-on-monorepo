@@ -21,7 +21,7 @@ export const FilterButton: FC<FilterButtonProps> = ({
         whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium
         transition-colors duration-200
         ${isActive 
-          ? 'bg-[#8000FF] text-white' 
+          ? 'bg-primary text-white' 
           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
         }
       `}

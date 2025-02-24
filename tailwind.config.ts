@@ -51,6 +51,8 @@ export default {
           "4": "hsl(var(--chart-4))",
           "5": "hsl(var(--chart-5))",
         },
+        "option-a": "hsl(var(--option-a-color))",
+        "option-b": "hsl(var(--option-b-color))",
       },
       borderRadius: {
         lg: "var(--radius)",

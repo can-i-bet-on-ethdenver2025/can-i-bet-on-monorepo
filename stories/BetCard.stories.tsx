@@ -27,7 +27,6 @@ type Pool = {
   status: PoolStatus;
   imageUrl: string;
   category: string;
-  creatorAddress: string;
   creatorName: string;
   creatorId: string;
   closureCriteria: string;
@@ -57,7 +56,6 @@ const defaultPool: Pool = {
   status: PoolStatus.Pending,
   imageUrl: "https://picsum.photos/200",
   category: "crypto",
-  creatorAddress: "0x1234567890abcdef",
   creatorName: "@cryptoexpert",
   creatorId: "123456789",
   closureCriteria: "December 31st, 2024 23:59:59 UTC",

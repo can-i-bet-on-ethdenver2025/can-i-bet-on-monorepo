@@ -34,7 +34,7 @@ export const BottomNav: FC<BottomNavProps> = ({ currentPath = "/" }) => {
             href={item.href}
             className={`flex flex-col items-center justify-center flex-1 h-full
               ${
-                currentPath === item.href ? "text-[#8000FF]" : "text-gray-600"
+                currentPath === item.href ? "text-primary" : "text-gray-600"
               }`}
           >
             <item.icon className="w-6 h-6" />
