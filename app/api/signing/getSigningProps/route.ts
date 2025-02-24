@@ -66,6 +66,10 @@ export async function POST(request: Request) {
     // Get USDC nonce for the user
     const nonce = await usdcContract.nonces(body.userWalletAddress);
 
+    // Get USDC balance for the user
+    const balance = await usdcContract.balanceOf(body.userWalletAddress);
+    console.log('USDC Balance', balance);
+
     // Get PERMIT_TYPEHASH from USDC contract
     const PERMIT_TYPEHASH = await usdcContract.PERMIT_TYPEHASH();
 

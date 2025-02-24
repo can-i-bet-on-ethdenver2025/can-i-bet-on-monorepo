@@ -34,6 +34,7 @@ const PRIVATE_CHAIN_CONFIG: {
 
 export async function POST(request: Request) {
   try {
+    console.log('Received request:', request)
     const body: PlaceBetRequest = await request.json();
     const chainConfig = CHAIN_CONFIG[body.chainId];
     if (!chainConfig) {
@@ -68,29 +69,59 @@ export async function POST(request: Request) {
     // Convert amount to proper format
     const amount = parseUnits(body.amount, 6); // USDC has 6 decimals
 
-  
+    console.log('Contract address:', chainConfig.applicationContractAddress);
+    console.log('Wallet address:', wallet.address);
+    
+    // Format permit signature
+    const permitSig = {
+      v: body.permitSignature.v,
+      r: body.permitSignature.r,
+      s: body.permitSignature.s
+    };
+
+    console.log('Calling placeBet with the following data:', {
+      poolId: body.poolId,
+      optionIndex: body.optionIndex,
+      amount: amount.toString(),
+      walletAddress: body.walletAddress,
+      permitDeadline: body.usdcPermitDeadline,
+      permitSignature: permitSig
+    });
+
+    // convert pool ID from hex to number
+    const poolId = parseInt(body.poolId, 16);
+
+    console.log('Data to call TX:', {
+      poolId,
+      optionIndex: body.optionIndex,
+      amount: BigInt(amount),
+      walletAddress: body.walletAddress,
+      permitDeadline: body.usdcPermitDeadline,
+      permitSignature: permitSig,
+    })
+
     // Call placeBet
     const tx = await contract.placeBet(
-      body.poolId,
+      poolId,
       body.optionIndex,
-      amount,
+      BigInt(amount),
       body.walletAddress,
       body.usdcPermitDeadline,
-      body.permitSignature,
-      body.betSignature,
+      permitSig,
       {
-        gasLimit: 500000, // Set appropriate gas limit
+        gasLimit: 1000000,
+        maxFeePerGas: parseUnits("5", "gwei"),
+        maxPriorityFeePerGas: parseUnits("5", "gwei"),
+        type: 2,
       }
     );
 
-    // Wait for transaction
-    const receipt = await tx.wait();
+    console.log('Transaction sent:', tx.hash);
 
-    // Return transaction hash and other relevant data
+    // Don't wait for confirmations, just get the response
     return NextResponse.json({
       success: true,
-      transactionHash: receipt.hash,
-      blockNumber: receipt.blockNumber,
+      transactionHash: tx.hash,
     });
   } catch (error) {
     console.error("Error in sendSignedPlaceBet:", error);
