@@ -126,7 +126,7 @@ contract BettingPools is EIP712, Ownable, FunctionsClient, AutomationCompatibleI
     usdc = ERC20Permit(_usdc);
   }
 
-  function createPool(CreatePoolParams calldata params) external returns (uint256 poolId) {
+  function createPool(CreatePoolParams calldata params) external onlyOwner returns (uint256 poolId) {
     if (params.betsCloseAt <= block.timestamp) revert BetsCloseTimeInPast();
     if (params.betsCloseAt >= params.decisionDate) revert BetsCloseAfterDecision();
 
@@ -339,10 +339,12 @@ contract BettingPools is EIP712, Ownable, FunctionsClient, AutomationCompatibleI
     } else {
       // Payout the winning bet
       for (uint256 i = 0; i < pool.betIds.length; i++) {
+        uint256 loosingOption = pool.winningOption == 0 ? 1 : 0;
         Bet storage bet = bets[pool.betIds[i]];
         if (bet.option == pool.winningOption) {
-          uint256 fee = bet.amount * PAYOUT_FEE_BP / 10000;
-          uint256 payout = bet.amount - fee;
+          uint256 winAmount = (bet.amount * pool.betTotals[loosingOption]) / pool.betTotals[pool.winningOption] + bet.amount;
+          uint256 fee = (winAmount * PAYOUT_FEE_BP) / 10000;
+          uint256 payout = winAmount - fee;
           usdc.transfer(bet.owner, payout);
           usdc.transfer(owner(), fee);
           bets[pool.betIds[i]].isPayedOut = true;
@@ -359,5 +361,9 @@ contract BettingPools is EIP712, Ownable, FunctionsClient, AutomationCompatibleI
     }
     bettingPoolsToPayOut[index] = bettingPoolsToPayOut[bettingPoolsToPayOut.length - 1];
     bettingPoolsToPayOut.pop();
+  }
+
+  function getHash(bytes32 structHash) public view returns (bytes32) {
+    return _hashTypedDataV4(structHash);
   }
 }

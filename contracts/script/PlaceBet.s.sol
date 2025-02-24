@@ -1,43 +1,78 @@
-// // SPDX-License-Identifier: UNLICENSED
-// pragma solidity ^0.8.13;
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.24;
 
-// import {Script, console2} from "forge-std/Script.sol";
-// import {BettingPools} from "../src/BettingPools.sol";
-// import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "forge-std/Script.sol";
+import "../src/BettingPools.sol";
+import "../mocks/MockUSDC.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit.sol";
+import "@openzeppelin/contracts/interfaces/IERC5267.sol";
 
-// contract PlaceBetScript is Script {
-//     // You can modify these values when running the script
-//     address constant BETTING_POOLS_ADDRESS = address(0x883Fba984612A273DBaEcC79036Fb674709cAd39); // Replace with actual contract address
-//     address constant USDC_ADDRESS = address(0x5f96C54c3ec8db595d61F0f37E7C03B3E57145b0); // Replace with actual USDC address
-//     uint256 constant POOL_ID = 2; // Replace with actual pool ID
-//     uint256 constant OPTION_INDEX = 1; // 0 or 1
-//     uint256 constant BET_AMOUNT = 200e6; // 100 USDC (assuming 6 decimals)
+contract PlaceBetScript is Script {
+    function run() external {
+        // Load private key from environment variables
+        uint256 bettorPrivateKey = vm.envUint("ACCOUNT1_PRIVATE_KEY");
+        address bettor = vm.addr(bettorPrivateKey);
 
-//     function run() public {
-//         // Get private key from environment
-//         uint256 privateKey = vm.envUint("MAIN_PRIVATE_KEY");
-//         address bettor = vm.addr(privateKey);
+        // Get contract addresses from environment variables
+        address bettingPoolsAddress = vm.envAddress("BETTING_POOLS_ADDRESS");
+        address mockUsdcAddress = vm.envAddress("MOCK_USDC_ADDRESS");
+        MockUSDC usdc = MockUSDC(mockUsdcAddress);
+        BettingPools bettingPools = BettingPools(bettingPoolsAddress);
 
-//         // Start broadcasting transactions
-//         vm.startBroadcast(privateKey);
+        // Input pool parameters
+        uint256 poolId = 1;
+        uint256 optionIndex = 1;
+        uint256 amount = 1 * 10 ** usdc.decimals();
 
-//         // Get contract instances
-//         BettingPools bettingPools = BettingPools(BETTING_POOLS_ADDRESS);
-//         IERC20 usdc = IERC20(USDC_ADDRESS);
+        // USDC PERMIT SIGNATURE
 
-//         // Approve USDC spending
-//         usdc.approve(BETTING_POOLS_ADDRESS, BET_AMOUNT);
+        uint256 nonce = usdc.nonces(bettor);
+        uint256 deadline = block.timestamp + 1 hours;
 
-//         // Place the bet
-//         bettingPools.placeBet(POOL_ID, OPTION_INDEX, BET_AMOUNT);
+        bytes32 permitStructHash = keccak256(abi.encode(
+            usdc.PERMIT_TYPEHASH(),
+            bettor,
+            bettingPoolsAddress,
+            amount,
+            nonce,
+            deadline
+        ));
+        bytes32 permitDigest = usdc.getHash(permitStructHash);
 
-//         vm.stopBroadcast();
+        uint8 vPermit;
+        bytes32 rPermit;
+        bytes32 sPermit;
+        (vPermit, rPermit, sPermit) = vm.sign(bettorPrivateKey, permitDigest);
 
-//         // Log the results
-//         console2.log("Bet placed successfully!");
-//         console2.log("Bettor:", bettor);
-//         console2.log("Pool ID:", POOL_ID);
-//         console2.log("Option:", OPTION_INDEX);
-//         console2.log("Amount:", BET_AMOUNT);
-//     }
-// }
+        // BET SIGNATURE
+
+        bytes32 betStructHash = keccak256(abi.encode(
+            bettingPools.BET_TYPEHASH(),
+            poolId,
+            optionIndex,
+            amount,
+            bettor
+        ));
+        bytes32 betDigest = bettingPools.getHash(betStructHash);
+
+        uint8 vBet;
+        bytes32 rBet;
+        bytes32 sBet;
+        (vBet, rBet, sBet) = vm.sign(bettorPrivateKey, betDigest);
+
+        vm.startBroadcast(bettorPrivateKey);
+
+        // Place the bet with both signatures
+        bettingPools.placeBet(
+            poolId,
+            optionIndex,
+            amount,
+            bettor,
+            deadline,
+            BettingPools.Signature({v: vPermit, r: rPermit, s: sPermit}),
+            BettingPools.Signature({v: vBet, r: rBet, s: sBet})
+        );
+
+        vm.stopBroadcast();
+    }
+}
