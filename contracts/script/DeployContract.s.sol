@@ -15,11 +15,14 @@ contract DemoPoolsScript is Script {
     uint256 deployerKey = vm.envUint("MAIN_PRIVATE_KEY");
     address deployer = vm.addr(deployerKey);
 
+    // Get the mock USDC address
+    address mockUsdcAddress = vm.envAddress("MOCK_USDC_ADDRESS");
+
     vm.startBroadcast(deployer);
 
     new BettingPools(
       address(0xf9B8fc078197181C841c296C876945aaa425B278),
-      address(0x036CbD53842c5426634e7929541eC2318f3dCF7e)
+      mockUsdcAddress
     );
 
     vm.stopBroadcast();

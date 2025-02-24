@@ -12,6 +12,8 @@ contract PlaceBetScript is Script {
         // Load private key from environment variables
         uint256 bettorPrivateKey = vm.envUint("ACCOUNT1_PRIVATE_KEY");
         address bettor = vm.addr(bettorPrivateKey);
+        // Print the bettor's address
+        console.log("Bettor address:", bettor);
 
         // Get contract addresses from environment variables
         address bettingPoolsAddress = vm.envAddress("BETTING_POOLS_ADDRESS");
@@ -21,8 +23,8 @@ contract PlaceBetScript is Script {
 
         // Input pool parameters
         uint256 poolId = 1;
-        uint256 optionIndex = 1;
-        uint256 amount = 1 * 10 ** usdc.decimals();
+        uint256 optionIndex = 0;
+        uint256 amount = 2 * 10 ** usdc.decimals();
 
         // USDC PERMIT SIGNATURE
 

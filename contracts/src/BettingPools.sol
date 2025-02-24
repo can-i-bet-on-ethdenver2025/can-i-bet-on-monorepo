@@ -129,8 +129,8 @@ contract BettingPools is EIP712, Ownable, FunctionsClient, AutomationCompatibleI
   }
 
   function createPool(CreatePoolParams calldata params) external onlyOwner returns (uint256 poolId) {
-    if (params.betsCloseAt <= block.timestamp) revert BetsCloseTimeInPast();
-    if (params.betsCloseAt <= params.decisionDate) revert BetsCloseAfterDecision();
+    require(params.betsCloseAt > block.timestamp, "Bets close time must be in the future");
+    require(params.betsCloseAt <= params.decisionDate, "Bets close time must be before decision date");
 
     poolId = nextPoolId++;
     
