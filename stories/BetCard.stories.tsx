@@ -15,37 +15,9 @@ const meta: Meta<typeof BetCard> = {
 export default meta;
 type Story = StoryObj<typeof BetCard>;
 
-// Define the Pool type to match the schema
-type Pool = {
-  id: string;
-  poolIntId: string;
-  question: string;
-  options: string[];
-  totalBets: string;
-  totalBetsByOption: string[];
-  selectedOption: string;
-  status: PoolStatus;
-  imageUrl: string;
-  category: string;
-  creatorName: string;
-  creatorId: string;
-  closureCriteria: string;
-  closureInstructions: string;
-  betsCloseAt: string;
-  decisionDate: string;
-  isDraw: boolean;
-  createdBlockNumber: string;
-  createdBlockTimestamp: string;
-  createdTransactionHash: string;
-  lastUpdatedBlockNumber: string;
-  lastUpdatedBlockTimestamp: string;
-  lastUpdatedTransactionHash: string;
-  gradedBlockNumber: string;
-  gradedBlockTimestamp: string;
-  gradedTransactionHash: string;
-};
-
-const defaultPool: Pool = {
+// Updated Pool type to match GetPoolsQuery
+const defaultPool = {
+  __typename: "Pool" as const,
   id: "0x1234567890abcdef",
   poolIntId: "1",
   question: "Will Bitcoin reach $100,000 by end of 2024?",
@@ -72,6 +44,8 @@ const defaultPool: Pool = {
   gradedBlockNumber: "0",
   gradedBlockTimestamp: "0",
   gradedTransactionHash: "0x0000000000000000000000000000000000000000",
+  chainId: "84532",
+  chainName: "base-sepolia",
 };
 
 export const Default: Story = {
@@ -116,12 +90,11 @@ export const LongQuestion: Story = {
 
 export const InteractiveBetting: Story = {
   render: function Render() {
-    const [pool, setPool] = useState<Pool>({
+    const [pool, setPool] = useState({
       ...defaultPool,
       question: "Interactive Betting Demo",
       creatorName: "@demouser",
     });
-
 
     return (
       <div className="space-y-4">
@@ -136,7 +109,7 @@ export const InteractiveBetting: Story = {
 
 export const AnimatedNumbers: Story = {
   render: function Render() {
-    const [pool, setPool] = useState<Pool>(defaultPool);
+    const [pool, setPool] = useState(defaultPool);
 
     const randomizeStats = useCallback(() => {
       const yes = Math.floor(Math.random() * 2000000);
