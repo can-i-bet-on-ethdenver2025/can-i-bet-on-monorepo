@@ -26,7 +26,7 @@ $ forge build --via-ir
 Set all required env vars. with `source /path/to/.env`.
 
 ```shell
-$ forge script script/DemoPools.s.sol --rpc-url $BASE_SEPOLIA_RPC_URL --broadcast --private-keys $MAIN_PRIVATE_KEY --private-keys $ACCOUNT1_PRIVATE_KEY --private-keys $ACCOUNT2_PRIVATE_KEY --private-keys $ACCOUNT3_PRIVATE_KEY --via-ir
+$ forge script script/DeployContract.s.sol --rpc-url $BASE_SEPOLIA_RPC_URL --broadcast --private-keys $MAIN_PRIVATE_KEY --via-ir
 ```
 
 ### Verify
@@ -38,6 +38,9 @@ First you need to get the ABI-encoded deployment args.
 ```shell
 $ cast abi-encode "constructor(address,address)" <0xFunctionsRouterAddress> <0xUsdcAddress>
 ```
+
+NOTE: You should not need to do this if using the testnet USDC token and Functions router addresses as these will not change.
+Just use these pre-ABI-encoded deployment args: `0x000000000000000000000000f9b8fc078197181c841c296c876945aaa425b278000000000000000000000000036cbd53842c5426634e7929541ec2318f3dcf7e`
 
 ```shell
 $ forge verify-contract <Deployed Contract Address> BettingPools --watch --verifier-url "https://api-sepolia.basescan.org/api?" --chain-id 84532 --via-ir --constructor-args <ABI Encoded Args>
