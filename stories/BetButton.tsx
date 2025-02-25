@@ -166,49 +166,54 @@ export const BetButton = ({
 
       const usdcPermitDeadline = Math.floor(Date.now() / 1000) + 3600; // 1 hour from now
 
-      // EIP-712 typed data for USDC permit
-      const domain = {
-        name: "USDC", // TODO: change this to USD Coin for mainnet
-        version: "2",
+      // Verify the domain separator matches the contract
+      const domainData = {
+        name: signingData.usdcName,
+        version: "1",
         chainId: Number(chainId),
-        verifyingContract: chainConfig.usdcAddress,
+        verifyingContract: chainConfig.usdcAddress
       };
 
+      // EIP-2612 standard types for permit
       const types = {
         Permit: [
           { name: "owner", type: "address" },
           { name: "spender", type: "address" },
           { name: "value", type: "uint256" },
           { name: "nonce", type: "uint256" },
-          { name: "deadline", type: "uint256" },
-        ],
+          { name: "deadline", type: "uint256" }
+        ]
       };
 
-      const permitMessage = {
+      const message = {
         owner: wallet.address,
         spender: chainConfig.applicationContractAddress,
         value: amount,
         nonce: signingData.usdcNonce,
-        deadline: usdcPermitDeadline,
+        deadline: usdcPermitDeadline
       };
 
-      console.log('Permit data to sign', permitMessage);
+      console.log('Permit data to sign:', {
+        domain: domainData,
+        types,
+        message,
+      });
 
-      // Sign the USDC permit using eth_signTypedData_v4
+      // Sign the permit using EIP-712
       const permitSignature = await provider.request({
         method: 'eth_signTypedData_v4',
         params: [
           wallet.address,
           JSON.stringify({
             types,
+            domain: domainData,
             primaryType: 'Permit',
-            domain,
-            message: permitMessage,
+            message,
           }),
         ],
       });
 
-      // Parse the signature into v, r, s using ethers
+      // Parse the signature
       const sig = ethers.Signature.from(permitSignature);
       const { v, r, s } = sig;
 

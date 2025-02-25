@@ -66,8 +66,6 @@ export async function POST(request: Request) {
       BettingPoolsAbi.abi,
       wallet
     );
-    // Convert amount to proper format
-    const amount = parseUnits(body.amount, 6); // USDC has 6 decimals
 
     console.log('Contract address:', chainConfig.applicationContractAddress);
     console.log('Wallet address:', wallet.address);
@@ -82,7 +80,7 @@ export async function POST(request: Request) {
     console.log('Calling placeBet with the following data:', {
       poolId: body.poolId,
       optionIndex: body.optionIndex,
-      amount: amount.toString(),
+      amount: body.amount,
       walletAddress: body.walletAddress,
       permitDeadline: body.usdcPermitDeadline,
       permitSignature: permitSig
@@ -94,7 +92,7 @@ export async function POST(request: Request) {
     console.log('Data to call TX:', {
       poolId,
       optionIndex: body.optionIndex,
-      amount: BigInt(amount),
+      amount: BigInt(body.amount),
       walletAddress: body.walletAddress,
       permitDeadline: body.usdcPermitDeadline,
       permitSignature: permitSig,
@@ -104,7 +102,7 @@ export async function POST(request: Request) {
     const tx = await contract.placeBet(
       poolId,
       body.optionIndex,
-      BigInt(amount),
+      BigInt(body.amount),
       body.walletAddress,
       body.usdcPermitDeadline,
       permitSig,
