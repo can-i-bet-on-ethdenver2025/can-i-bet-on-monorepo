@@ -210,7 +210,7 @@ export function handleTwitterPostIdSet(event: TwitterPostIdSetEvent): void {
 
   const pool = Pool.load(poolId);
   if (pool == null) {
-    throw new Error("Pool not found");
+    throw new Error(`Pool ${poolId} (event: ${event.params.poolId}) not found`);
   }
   pool.xPostId = event.params.twitterPostId;
 

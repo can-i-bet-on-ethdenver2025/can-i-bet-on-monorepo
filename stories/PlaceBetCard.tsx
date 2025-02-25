@@ -82,7 +82,8 @@ export const PlaceBetCard = ({ poolId }: PlaceBetCardProps) => {
       <Card className="w-full max-w-md mx-auto">
         <CardContent className="py-4">
           <div className="text-red-500">
-            Error loading bet data. Please try again later.
+            Error loading bet data. Please try again later:
+            {queryError.message}
           </div>
         </CardContent>
       </Card>
@@ -102,17 +103,31 @@ export const PlaceBetCard = ({ poolId }: PlaceBetCardProps) => {
   const currentChainId = parseChainId(wallets?.[0]?.chainId || 84532);
 
   // Calculate potential earnings
-  const calculateEarnings = (optionTotal: number) => {
-  
+  const calculateEarnings = (optionTotal: string) => {
+    const optionTotalParsed = parseFloat(optionTotal);
     const totalPoolParsed = parseFloat(totalPool); // Total pool comes from contract and is already in USDC
-    if (!bet) {
+    if (!betAmountInUSDC) {
       return 0;
     }
     // If there's no bets on the other side (i.e this option is 100% of the pool), you win your bet amount back
     if (optionTotal === totalPool) {
       return 0;
     }
-    return (bet / (optionTotal + bet)) * (totalPoolParsed + bet) - bet;
+    console.log(optionTotal, totalPoolParsed, betAmountInUSDC);
+    console.log(typeof optionTotal);
+    console.log(
+      `(${betAmountInUSDC} / (${optionTotalParsed} + ${betAmountInUSDC})) * (${totalPoolParsed} + ${betAmountInUSDC}) - ${betAmountInUSDC}`
+    );
+    console.log(
+      (betAmountInUSDC / (optionTotalParsed + betAmountInUSDC)) *
+        (totalPoolParsed + betAmountInUSDC) -
+        betAmountInUSDC
+    );
+    return (
+      (betAmountInUSDC / (optionTotalParsed + betAmountInUSDC)) *
+        (totalPoolParsed + betAmountInUSDC) -
+      betAmountInUSDC
+    );
   };
 
   const positiveEarnings = calculateEarnings(totalPositiveBets);
@@ -155,6 +170,8 @@ export const PlaceBetCard = ({ poolId }: PlaceBetCardProps) => {
           totalPositiveBets: {totalPositiveBets.toString()}
           <br />
           totalNegativeBets: {totalNegativeBets.toString()}
+          <br />
+          totalPool: {totalPool.toString()}
         </div>
 
         <div className="grid grid-cols-2 gap-4">

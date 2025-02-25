@@ -196,7 +196,8 @@ export const BetButton = ({
   const isDisabled = disabled || !ready || !wallets?.[0] || !chainConfig;
   const isError =
     !wallets?.[0] || !chainConfig || !chainConfig.applicationContractAddress;
-  if (isError) {
+  
+    if (isError) {
     // console.log("Could not render the BetButton: ", {
     //   ready,
     //   wallets,
@@ -205,6 +206,7 @@ export const BetButton = ({
     //     chainConfig?.applicationContractAddress,
     // });
   }
+
   if (!ready) {
     return (
       <div className="animate-pulse h-10 w-48 bg-gray-200 rounded-lg">
