@@ -99,8 +99,7 @@ export const PlaceBetCard = ({ poolId }: PlaceBetCardProps) => {
   const totalPositiveBets = data?.pool?.totalBetsByOption[0];
   const totalNegativeBets = data?.pool?.totalBetsByOption[1];
 
-  // Get chainId from wallet
-  const currentChainId = parseChainId(wallets?.[0]?.chainId || 84532);
+  const currentChainId = parseChainId(84532);
 
   // Calculate potential earnings
   const calculateEarnings = (optionTotal: string) => {

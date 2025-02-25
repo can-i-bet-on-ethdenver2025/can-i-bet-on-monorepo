@@ -1,7 +1,7 @@
 //TODO Doesn't support Option A or B, hardcoded to Yes and No
 import { CHAIN_CONFIG, optionColor } from "@/lib/config";
 import { cn } from "@/lib/utils";
-import { ConnectedWallet, useWallets } from "@privy-io/react-auth";
+import { ConnectedWallet, useWallets, usePrivy } from "@privy-io/react-auth";
 import { ethers } from "ethers";
 import { useState } from "react";
 import { Chain } from "viem/chains";
@@ -37,11 +37,11 @@ export const BetButton = ({
   amount,
 }: BetButtonProps) => {
   const [isLoading, setIsLoading] = useState(false);
+  const { ready, wallets } = useWallets();
+  const { login, authenticated } = usePrivy();
+  const chainConfig = CHAIN_CONFIG[chainId];
 
   // In Storybook/development, use mock data if real data isn't available
-
-  const { ready, wallets } = useWallets();
-  const chainConfig = CHAIN_CONFIG[chainId];
 
   // if (option.length > 24) {
   //   throw new Error("Option text cannot be longer than 24 characters");
@@ -66,6 +66,12 @@ export const BetButton = ({
 
   const handleClick = async () => {
     console.log("Handling click");
+
+    // If the user is not signed in with Privy, show the popup to allow them to sign in
+    if (!authenticated) {
+      login();
+      return;
+    }
 
     const embeddedWallet = wallets.find((wallet) => wallet.walletClientType === 'privy')!;
     try {
@@ -194,20 +200,18 @@ export const BetButton = ({
       setIsLoading(false);
     }
   };
-  const isDisabled = disabled || !ready || !wallets?.[0] || !chainConfig;
-  const isError =
-    !wallets?.[0] || !chainConfig || !chainConfig.applicationContractAddress;
-  
-    if (isError) {
-    // console.log("Could not render the BetButton: ", {
-    //   ready,
-    //   wallets,
-    //   chainConfig,
-    //   chainConfigApplicationContractAddress:
-    //     chainConfig?.applicationContractAddress,
-    // });
-  }
-
+  // const isDisabled = disabled || !ready || !wallets?.[0] || !chainConfig;
+  // const isError =
+  //   !wallets?.[0] || !chainConfig || !chainConfig.applicationContractAddress;
+  // if (isError) {
+  //   // console.log("Could not render the BetButton: ", {
+  //   //   ready,
+  //   //   wallets,
+  //   //   chainConfig,
+  //   //   chainConfigApplicationContractAddress:
+  //   //     chainConfig?.applicationContractAddress,
+  //   // });
+  // }
   if (!ready) {
     return (
       <div className="animate-pulse h-10 w-48 bg-gray-200 rounded-lg">
@@ -224,15 +228,15 @@ export const BetButton = ({
           "rounded-2xl",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
           "flex items-center justify-center",
-          isDisabled || isError
-            ? buttonStyles.disabled
-            : cn(
-                isSelected
-                  ? buttonStyles.selected
-                  : cn(buttonStyles.default, buttonStyles.hover)
-              )
+          // isDisabled || isError
+          //   ? buttonStyles.disabled
+          //   : cn(
+          //       isSelected
+          //         ? buttonStyles.selected
+          //         : cn(buttonStyles.default, buttonStyles.hover)
+          //     )
         )}
-        disabled={isDisabled || isError || isLoading}
+        //disabled={isDisabled || isError || isLoading}
         type="button"
         onClick={handleClick}
       >
