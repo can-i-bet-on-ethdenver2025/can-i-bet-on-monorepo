@@ -12,7 +12,6 @@ const validateApiKey = async (request: Request) => {
 
 export async function POST(request: Request) {
   try {
-    console.log('get-decision endpoint called with request body:', await request.json());
     // Validate API key
     if (!validateApiKey(request)) {
       console.log('Chainlink Functions provided invalid API key');
@@ -47,7 +46,8 @@ export async function POST(request: Request) {
 
     // Convert poolId to properly padded hex string format
     const hexString = poolId.toString(16).toLowerCase();
-    const redisKey = '0x' + hexString.padStart(2 * Math.ceil(hexString.length / 2), '0');
+    const redisKey = 'POOL_GRADE:0x' + hexString.padStart(2 * Math.ceil(hexString.length / 2), '0');
+    console.log('redisKey:', redisKey);
 
     const value = await redis.get(redisKey);
 

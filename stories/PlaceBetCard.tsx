@@ -126,12 +126,13 @@ export const PlaceBetCard = ({ poolId }: PlaceBetCardProps) => {
 
     // If there's no bets on the other side (i.e this option is 100% of the pool), you win your bet amount back
     if (optionTotal === totalPool) {
-      return betAmountInUSDC;
+      return 0;
     }
 
     return (
       (betAmountInUSDC / (optionTotal + betAmountInUSDC)) *
-      (totalPool + betAmountInUSDC)
+      (totalPool + betAmountInUSDC) -
+      betAmountInUSDC
     );
   };
 
@@ -192,6 +193,7 @@ export const PlaceBetCard = ({ poolId }: PlaceBetCardProps) => {
         <div className="grid grid-cols-2 gap-4">
           {options.map((option, index) => {
             const earnings = calculateEarnings(index);
+            console.log('Earnings:', earnings);
             const colorClassnames = optionColorClasses[index];
 
             return (

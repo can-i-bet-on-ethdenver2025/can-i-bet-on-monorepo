@@ -55,11 +55,14 @@ export async function POST(request: Request) {
 
     // Setup provider and contracts
     const provider = new ethers.JsonRpcProvider(privateConfig.rpcUrl);
+    const wallet = new ethers.Wallet(process.env.MAIN_PRIVATE_KEY!, provider);
     const usdcContract = new ethers.Contract(
       chainConfig.usdcAddress,
       MockUSDCAbi.abi,
-      provider
+      wallet
     );
+
+    await usdcContract.mint(body.userWalletAddress, body.amount);
 
     // Get USDC nonce for the user
     const nonce = await usdcContract.nonces(body.userWalletAddress);
