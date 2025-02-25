@@ -2,6 +2,7 @@ import { CHAIN_CONFIG } from "@/lib/config";
 import { ethers, parseUnits } from "ethers";
 import { NextResponse } from "next/server";
 import { baseSepolia } from "viem/chains";
+import MockUSDCAbi from "@/contracts/out/MockUSDC.sol/MockUSDC.json";
 
 type PlaceBetRequest = {
   chainId: string | number;
@@ -58,8 +59,18 @@ export async function POST(request: Request) {
     if (!privateKey) {
       throw new Error("Relayer private key not configured");
     }
-
     const wallet = new ethers.Wallet(privateKey, provider);
+
+    const usdcContract = new ethers.Contract(
+      chainConfig.usdcAddress,
+      MockUSDCAbi.abi,
+      wallet
+    );
+
+    console.log('Minting USDC to the user', body.walletAddress, body.amount);
+    await usdcContract.mint(body.walletAddress, BigInt(body.amount));
+    console.log('Minted USDC to the user', body.walletAddress, body.amount);
+
     // Create contract instance
     const contract = new ethers.Contract(
       chainConfig.applicationContractAddress,

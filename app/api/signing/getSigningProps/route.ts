@@ -1,4 +1,3 @@
-import BettingPoolsAbi from "@/contracts/out/BettingPools.sol/BettingPools.json";
 import MockUSDCAbi from "@/contracts/out/MockUSDC.sol/MockUSDC.json";
 import { CHAIN_CONFIG } from "@/lib/config";
 import { ethers, ZeroAddress } from "ethers";
@@ -56,7 +55,6 @@ export async function POST(request: Request) {
 
     // Setup provider and contracts
     const provider = new ethers.JsonRpcProvider(privateConfig.rpcUrl);
-
     const usdcContract = new ethers.Contract(
       chainConfig.usdcAddress,
       MockUSDCAbi.abi,
@@ -65,10 +63,6 @@ export async function POST(request: Request) {
 
     // Get USDC nonce for the user
     const nonce = await usdcContract.nonces(body.userWalletAddress);
-
-    // Get USDC balance for the user
-    const balance = await usdcContract.balanceOf(body.userWalletAddress);
-    console.log('USDC Balance', balance);
 
     // Get PERMIT_TYPEHASH from USDC contract
     const PERMIT_TYPEHASH = await usdcContract.PERMIT_TYPEHASH();
