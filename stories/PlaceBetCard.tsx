@@ -2,42 +2,43 @@
 
 import { GET_POOL } from "@/app/queries";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useUsdcBalance } from "@/components/useUsdcBalance";
 import { PoolStatus } from "@/lib/__generated__/graphql";
-import { parseChainId, USDC_DECIMALS, usdcAmountToDollars } from "@/lib/utils";
+import { optionColorClasses } from "@/lib/config";
+import { USDC_DECIMALS, usdcAmountToDollars } from "@/lib/utils";
 import { BetButton } from "@/stories/BetButton";
 import { useQuery } from "@apollo/client";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useWallets } from "@privy-io/react-auth";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+
+// Custom hook for fetching USDC balance
 
 interface PlaceBetCardProps {
   poolId: string;
 }
 
-const LoadingSkeleton = () => (
-  <Card className="w-full max-w-md mx-auto">
-    <CardHeader>
-      <Skeleton className="h-8 w-40" />
-    </CardHeader>
-    <CardContent className="space-y-4">
-      <div>
-        <Skeleton className="h-4 w-32 mb-2" />
-        <Skeleton className="h-10 w-full" />
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        <Skeleton className="h-32 w-full" />
-        <Skeleton className="h-32 w-full" />
-      </div>
-      <div className="space-y-2">
-        <Skeleton className="h-4 w-36" />
-        <Skeleton className="h-4 w-36" />
-      </div>
-    </CardContent>
-  </Card>
-);
+// const LoadingSkeleton = () => (
+//   <Card className="w-full max-w-md mx-auto">
+//     <CardHeader>
+//       <Skeleton className="h-8 w-40" />
+//     </CardHeader>
+//     <CardContent className="space-y-4">
+//       <div>
+//         <Skeleton className="h-4 w-32 mb-2" />
+//         <Skeleton className="h-10 w-full" />
+//       </div>
+//       <div className="grid grid-cols-2 gap-4">
+//         <Skeleton className="h-32 w-full" />
+//         <Skeleton className="h-32 w-full" />
+//       </div>
+//       <div className="space-y-2">
+//         <Skeleton className="h-4 w-36" />
+//         <Skeleton className="h-4 w-36" />
+//       </div>
+//     </CardContent>
+//   </Card>
+// );
 
 const betFormSchema = z.object({
   betAmount: z
@@ -53,9 +54,11 @@ const betFormSchema = z.object({
 type BetFormValues = z.infer<typeof betFormSchema>;
 
 export const PlaceBetCard = ({ poolId }: PlaceBetCardProps) => {
+  const { usdcBalance, isLoadingBalance, currentChainId } = useUsdcBalance();
   const {
     register,
     watch,
+    setValue,
     formState: { errors },
   } = useForm<BetFormValues>({
     resolver: zodResolver(betFormSchema),
@@ -64,7 +67,6 @@ export const PlaceBetCard = ({ poolId }: PlaceBetCardProps) => {
     },
   });
 
-  const { ready, wallets } = useWallets();
   const {
     data,
     loading,
@@ -73,9 +75,14 @@ export const PlaceBetCard = ({ poolId }: PlaceBetCardProps) => {
     variables: { poolId },
   });
 
-  if (loading) {
-    return <LoadingSkeleton />;
-  }
+  // Handle MAX button click
+  const handleMaxClick = () => {
+    if (usdcBalance && parseFloat(usdcBalance) > 0) {
+      // Limit to 10000 as per the form validation
+      const maxAmount = Math.min(parseFloat(usdcBalance), 10000).toString();
+      setValue("betAmount", maxAmount, { shouldValidate: true });
+    }
+  };
 
   if (queryError) {
     return (
@@ -89,127 +96,125 @@ export const PlaceBetCard = ({ poolId }: PlaceBetCardProps) => {
       </Card>
     );
   }
+
+  if (!data?.pool) {
+    return (
+      <Card className="w-full max-w-md mx-auto">
+        <CardContent className="py-4">
+          <div className="text-red-500 text-center font-medium">
+            Pool {poolId} not found
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   const betAmount = watch("betAmount");
   const betAmountInUSDC =
     parseFloat(betAmount || "0") * Math.pow(10, USDC_DECIMALS);
-  const totalPool = data?.pool?.totalBets;
-  const bettingOpen = data?.pool?.status === PoolStatus.Pending;
-  const postiveOption = data?.pool?.options[0] || "Oh, yes";
-  const negativeOption = data?.pool?.options[1] || "Oh, No";
-  const totalPositiveBets = data?.pool?.totalBetsByOption[0];
-  const totalNegativeBets = data?.pool?.totalBetsByOption[1];
-
-  // Get chainId from wallet
-  const currentChainId = parseChainId(wallets?.[0]?.chainId || 84532);
+  const { totalBets, totalBetsByOption, options, status } = data.pool;
+  const totalPool = parseFloat(data.pool.totalBets);
+  const bettingOpen = data.pool.status === PoolStatus.Pending;
 
   // Calculate potential earnings
-  const calculateEarnings = (optionTotal: string) => {
-    const optionTotalParsed = parseFloat(optionTotal);
-    const totalPoolParsed = parseFloat(totalPool); // Total pool comes from contract and is already in USDC
+  const calculateEarnings = (optionIndex: number) => {
+    const optionTotal = parseFloat(totalBetsByOption[optionIndex]);
+
     if (!betAmountInUSDC) {
       return 0;
     }
+
     // If there's no bets on the other side (i.e this option is 100% of the pool), you win your bet amount back
     if (optionTotal === totalPool) {
-      return 0;
+      return betAmountInUSDC;
     }
-    console.log(optionTotal, totalPoolParsed, betAmountInUSDC);
-    console.log(typeof optionTotal);
-    console.log(
-      `(${betAmountInUSDC} / (${optionTotalParsed} + ${betAmountInUSDC})) * (${totalPoolParsed} + ${betAmountInUSDC}) - ${betAmountInUSDC}`
-    );
-    console.log(
-      (betAmountInUSDC / (optionTotalParsed + betAmountInUSDC)) *
-        (totalPoolParsed + betAmountInUSDC) -
-        betAmountInUSDC
-    );
+
     return (
-      (betAmountInUSDC / (optionTotalParsed + betAmountInUSDC)) *
-        (totalPoolParsed + betAmountInUSDC) -
-      betAmountInUSDC
+      (betAmountInUSDC / (optionTotal + betAmountInUSDC)) *
+      (totalPool + betAmountInUSDC)
     );
   };
-
-  const positiveEarnings = calculateEarnings(totalPositiveBets);
-  const negativeEarnings = calculateEarnings(totalNegativeBets);
 
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
-        <CardTitle className={"text-center"}>Place bet</CardTitle>
+        <CardTitle className="text-center">Place a bet</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
-          <label htmlFor="betAmount" className="text-sm font-medium block mb-2">
-            Bet Amount
-          </label>
-          <Input
-            id="betAmount"
-            type="number"
-            {...register("betAmount")}
-            className={`w-full ${errors.betAmount ? "border-red-500" : ""}`}
-            min="0"
-            step="1"
-          />
+          <div className="relative">
+            <span className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400 text-xl">
+              $
+            </span>
+            <input
+              id="betAmount"
+              type="number"
+              {...register("betAmount")}
+              className={`w-full pl-10 pr-24 py-4 text-xl rounded-2xl border transition-colors focus:outline-none ${
+                errors.betAmount
+                  ? "border-red-500"
+                  : "border-primary/60 hover:border-primay/80 focus:border-primary"
+              } appearance-none`}
+              min="0"
+              step="1"
+              placeholder="Bet amount"
+              style={{
+                WebkitAppearance: "none",
+                MozAppearance: "textfield",
+              }}
+            />
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex flex-col items-end">
+              <button
+                type="button"
+                onClick={handleMaxClick}
+                className="text-primary hover:text-primary/80 font-bold text-sm transition-colors"
+                disabled={
+                  isLoadingBalance ||
+                  !usdcBalance ||
+                  parseFloat(usdcBalance) <= 0
+                }
+              >
+                MAX
+              </button>
+              <span className="text-xs text-gray-400 mt-1">
+                {isLoadingBalance
+                  ? "Loading balance..."
+                  : `Balance: $${usdcBalance || 0}`}
+              </span>
+            </div>
+          </div>
           {errors.betAmount && (
             <div className="text-sm text-red-500 mt-1">
               {errors.betAmount.message}
             </div>
           )}
         </div>
-        <div className="text-sm text-gray-500 text-center">
-          Potential Earnings
-        </div>
-        <div>
-          Amount: {betAmountInUSDC.toString()}
-          <br />
-          Positive Earnings: {positiveEarnings.toString()}
-          <br />
-          Negative Earnings: {negativeEarnings.toString()}
-          <br />
-          totalPositiveBets: {totalPositiveBets.toString()}
-          <br />
-          totalNegativeBets: {totalNegativeBets.toString()}
-          <br />
-          totalPool: {totalPool.toString()}
-        </div>
-
         <div className="grid grid-cols-2 gap-4">
-          <div className="flex flex-col items-center gap-2">
-            <BetButton
-              option={postiveOption}
-              optionIndex={0}
-              poolId={poolId}
-              chainId={currentChainId}
-              disabled={!bettingOpen || !!errors.betAmount}
-              isSelected={false}
-              amount={betAmountInUSDC.toString()}
-            />
-            <span className="text-lg font-bold">
-              {usdcAmountToDollars(positiveEarnings)}
-            </span>
-            <span className={"text-xs text-muted-foreground"}>
-              {usdcAmountToDollars(totalPositiveBets)} bets in pool
-            </span>
-          </div>
+          {options.map((option, index) => {
+            const earnings = calculateEarnings(index);
+            const colorClassnames = optionColorClasses[index];
 
-          <div className="flex flex-col items-center gap-2">
-            <BetButton
-              option={negativeOption}
-              optionIndex={1}
-              poolId={poolId}
-              chainId={currentChainId}
-              disabled={!bettingOpen || !!errors.betAmount}
-              isSelected={false}
-              amount={betAmountInUSDC.toString()}
-            />
-            <span className="text-lg font-bold">
-              {usdcAmountToDollars(negativeEarnings)}
-            </span>
-            <span className={"text-xs text-muted-foreground"}>
-              {usdcAmountToDollars(totalNegativeBets)} bets in pool
-            </span>
-          </div>
+            return (
+              <div key={index} className="flex flex-col items-center gap-2">
+                <BetButton
+                  option={option}
+                  optionIndex={index}
+                  poolId={poolId}
+                  chainId={currentChainId}
+                  disabled={!bettingOpen || !!errors.betAmount}
+                  amount={betAmountInUSDC.toString()}
+                  colorClassnames={colorClassnames}
+                />
+                <div
+                  className={`flex flex-col items-center gap-2 ${optionColorClasses[index].text}`}
+                >
+                  <p className="text-lg font-bold">
+                    +{usdcAmountToDollars(earnings)}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </CardContent>
     </Card>

@@ -182,7 +182,7 @@ export const Activity: FC<{
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
-        <CardTitle>Bet history</CardTitle>
+        <CardTitle className={"text-center"}>Bet history</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-2">

@@ -21,8 +21,13 @@ const Tweet: React.FC<TweetProps> = ({ id }) => {
   return (
     <div>
       <script async src="https://platform.twitter.com/widgets.js" />
-
-      <blockquote className="twitter-tweet" data-dnt="true" data-theme="dark" data-cards="hidden" data-conversation="none">
+      <blockquote
+        className="twitter-tweet bg-black"
+        data-dnt="true"
+        data-theme="dark"
+        data-cards="hidden"
+        data-conversation="none"
+      >
         <a href={`https://twitter.com/x/status/${id}`}></a>
       </blockquote>
     </div>

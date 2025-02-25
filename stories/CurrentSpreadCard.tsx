@@ -1,11 +1,13 @@
 import { GET_POOL } from "@/app/queries";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { optionColor } from "@/lib/config";
 import { usdcAmountToDollars } from "@/lib/utils";
 import { useQuery } from "@apollo/client";
 import { FC } from "react";
 import { RatioBar } from "./RatioBar";
+
 interface CurrentSpreadCardProps {
   poolId: string;
 }
@@ -71,10 +73,6 @@ export const CurrentSpreadCard: FC<CurrentSpreadCardProps> = ({ poolId }) => {
       <CardContent className="space-y-4">
         <div className="flex flex-col items-center">
           <RatioBar items={ratioItems} className="mb-2" />
-
-          <div className="text-center">
-            {`Total bets: ${usdcAmountToDollars(data?.pool?.totalBets || 0)}`}
-          </div>
         </div>
 
         <div className="flex-col gap-4">
@@ -90,6 +88,15 @@ export const CurrentSpreadCard: FC<CurrentSpreadCardProps> = ({ poolId }) => {
               </div>
             </div>
           ))}
+
+          <Separator className="my-2 bg-gray-700 h-px" />
+
+          <div className="flex mt-2">
+            <div className="text-lg text-white font-bold">Total bets</div>
+            <div className="text-lg text-white font-semibold ml-auto">
+              {usdcAmountToDollars(data?.pool?.totalBets || 0)}
+            </div>
+          </div>
         </div>
       </CardContent>
     </Card>

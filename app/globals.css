@@ -135,3 +135,7 @@ body {
 /* 4. #3cfd00 → HSL(111, 100%, 50%) //"Softer" Complementary */
  /* --primary: HSL(142.1 70.6% 45.3%); */
  /* --primary: HSL(266 100% 49%); */
+
+ .twitter-tweet iframe {
+   color-scheme: light;
+ }
