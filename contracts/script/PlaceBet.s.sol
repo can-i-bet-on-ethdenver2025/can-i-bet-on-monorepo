@@ -22,7 +22,7 @@ contract PlaceBetScript is Script {
         BettingPools bettingPools = BettingPools(bettingPoolsAddress);
 
         // Input pool parameters
-        uint256 poolId = 7;
+        uint256 poolId = 1;
         uint256 optionIndex = 1;
         uint256 amount = 3 * 10 ** usdc.decimals();
 

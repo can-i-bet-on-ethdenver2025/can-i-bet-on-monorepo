@@ -33,6 +33,8 @@ contract CreatePoolScript is Script {
                 closureInstructions: "If Claude's next release announcement highlights code generation improvements over mathematical reasoning improvements, then the first option wins. Otherwise, the second option wins."
             })
         );
+        
+        bettingPools.setTwitterPostId(pool1Id, "1894217309029634136");
 
         console.log("Pool created with ID:", pool1Id);
 

@@ -34,6 +34,8 @@ contract CreatePoolScript is Script {
             })
         );
 
+        bettingPools.setTwitterPostId(1, "1894217309029634136");
+
         // Pool 2: Bitcoin ETF Impact
         uint40 pool2BetsCloseAt = uint40(block.timestamp + 60 * 60 * 2);
         uint40 pool2DecisionDate = uint40(block.timestamp + 86400); // 24 hours
@@ -51,6 +53,8 @@ contract CreatePoolScript is Script {
                 closureInstructions: "Compare BTC price at the moment of first trading day volume report vs exactly 24 hours later. Use Coinbase price as reference. If price is higher, first option wins. If lower or equal, second option wins."
             })
         );
+
+        bettingPools.setTwitterPostId(2, "1894217309029634136");
 
         // Pool 3: Apple Vision Pro Sales
         uint40 pool3BetsCloseAt = uint40(block.timestamp + 60 * 60 * 4);
@@ -70,6 +74,8 @@ contract CreatePoolScript is Script {
             })
         );
 
+        bettingPools.setTwitterPostId(3, "1894217309029634136");
+
         // Pool 4: Super Bowl LVIII
         uint40 pool4BetsCloseAt = uint40(block.timestamp + 60 * 60 * 4);
         uint40 pool4DecisionDate = uint40(block.timestamp + 432000); // 5 days
@@ -87,6 +93,8 @@ contract CreatePoolScript is Script {
                 closureInstructions: "First team to put points on the scoreboard (any type of score) wins. If game is cancelled, bets will be refunded."
             })
         );
+
+        bettingPools.setTwitterPostId(4, "1894217309029634136");
 
         // Pool 5: Tesla Cybertruck Production
         uint40 pool5BetsCloseAt = uint40(block.timestamp + 60 * 60 * 6);
@@ -106,6 +114,8 @@ contract CreatePoolScript is Script {
             })
         );
 
+        bettingPools.setTwitterPostId(5, "1894217309029634136");
+
         // Pool 6: OpenAI's Next CEO
         uint40 pool6BetsCloseAt = uint40(block.timestamp + 60 * 60 * 6);
         uint40 pool6DecisionDate = uint40(block.timestamp + 7776000); // 90 days
@@ -123,6 +133,8 @@ contract CreatePoolScript is Script {
                 closureInstructions: "If Sam Altman is officially appointed as permanent CEO (not interim) by June 30th 2024, first option wins. If someone else is appointed or no permanent CEO is named by then, second option wins."
             })
         );
+
+        bettingPools.setTwitterPostId(6, "1894217309029634136");
 
         vm.stopBroadcast();
     }

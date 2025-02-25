@@ -45,8 +45,9 @@ export async function POST(request: Request) {
       }
     });
 
-    // Convert poolId to hex string format
-    const redisKey = '0x' + poolId.toString(16).toLowerCase();
+    // Convert poolId to properly padded hex string format
+    const hexString = poolId.toString(16).toLowerCase();
+    const redisKey = '0x' + hexString.padStart(2 * Math.ceil(hexString.length / 2), '0');
 
     const value = await redis.get(redisKey);
 
