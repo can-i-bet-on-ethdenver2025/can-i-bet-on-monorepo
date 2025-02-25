@@ -21,7 +21,7 @@ type ChainConfig = {
   export const CHAIN_CONFIG: Record<string, ChainConfig> = {
     [baseSepolia.id]: {
       chain: baseSepolia,
-      applicationContractAddress: "0xf815D9F7668b95745B0320ADD786692249edFbBe",
+      applicationContractAddress: "0xcA7214565ae6994F81e5dd1ed97a4F817afa0A25",
       iconUrl: baseIcon,
       backgroundColor: "#0052FF",
       usdcAddress: "0x3224f86e3e6dfC22aC1d04Ad4037e9b1983D7ba2",
