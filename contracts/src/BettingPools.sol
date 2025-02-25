@@ -285,6 +285,8 @@ contract BettingPools is Ownable, FunctionsClient {
         } else {
             revert("Bet cannot be graded");
         }
+
+        emit PoolClosed(poolId, responseOption);
     }
 
     function claimPayouts(uint256[] calldata betIds) external {

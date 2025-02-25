@@ -8,7 +8,7 @@ dataSources:
     name: BettingPools
     network: base-sepolia
     source:
-      address: "0x65883a2bb19a6b0399d318bffc2d9fba1b59fb07"
+      address: "0xf815d9f7668b95745b0320add786692249edfbbe"
       abi: BettingPools
       startBlock: 22369014
     mapping:

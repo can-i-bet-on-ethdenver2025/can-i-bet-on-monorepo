@@ -40,7 +40,7 @@ $ cast abi-encode "constructor(address,address)" <0xFunctionsRouterAddress> <0xU
 ```
 
 NOTE: You should not need to do this if using the testnet USDC token and Functions router addresses as these will not change.
-Just use these pre-ABI-encoded deployment args: `0x000000000000000000000000f9b8fc078197181c841c296c876945aaa425b278000000000000000000000000036cbd53842c5426634e7929541ec2318f3dcf7e`
+Just use these pre-ABI-encoded deployment args: `0x000000000000000000000000f9b8fc078197181c841c296c876945aaa425b2780000000000000000000000003224f86e3e6dfc22ac1d04ad4037e9b1983d7ba2`
 
 ```shell
 $ forge verify-contract <Deployed Contract Address> BettingPools --watch --verifier-url "https://api-sepolia.basescan.org/api?" --chain-id 84532 --via-ir --constructor-args <ABI Encoded Args>

@@ -17,8 +17,8 @@ contract CreatePoolScript is Script {
         BettingPools bettingPools = BettingPools(vm.envAddress("BETTING_POOLS_ADDRESS"));
 
         // Pool 1: Updated to be about Claude's capabilities
-        uint40 pool1BetsCloseAt = uint40(block.timestamp + 3600);
-        uint40 pool1DecisionDate = uint40(block.timestamp + 10800);
+        uint40 pool1BetsCloseAt = uint40(block.timestamp + 60 * 60 * 2);
+        uint40 pool1DecisionDate = uint40(block.timestamp + 86400);
         bettingPools.createPool(
             BettingPools.CreatePoolParams({
                 question: "What will be Claude's primary improvement in its next release?",
@@ -35,7 +35,7 @@ contract CreatePoolScript is Script {
         );
 
         // Pool 2: Bitcoin ETF Impact
-        uint40 pool2BetsCloseAt = uint40(block.timestamp + 7200); // 2 hours
+        uint40 pool2BetsCloseAt = uint40(block.timestamp + 60 * 60 * 2);
         uint40 pool2DecisionDate = uint40(block.timestamp + 86400); // 24 hours
         bettingPools.createPool(
             BettingPools.CreatePoolParams({
@@ -53,7 +53,7 @@ contract CreatePoolScript is Script {
         );
 
         // Pool 3: Apple Vision Pro Sales
-        uint40 pool3BetsCloseAt = uint40(block.timestamp + 172800); // 48 hours
+        uint40 pool3BetsCloseAt = uint40(block.timestamp + 60 * 60 * 4);
         uint40 pool3DecisionDate = uint40(block.timestamp + 2592000); // 30 days
         bettingPools.createPool(
             BettingPools.CreatePoolParams({
@@ -71,7 +71,7 @@ contract CreatePoolScript is Script {
         );
 
         // Pool 4: Super Bowl LVIII
-        uint40 pool4BetsCloseAt = uint40(block.timestamp + 259200); // 3 days
+        uint40 pool4BetsCloseAt = uint40(block.timestamp + 60 * 60 * 4);
         uint40 pool4DecisionDate = uint40(block.timestamp + 432000); // 5 days
         bettingPools.createPool(
             BettingPools.CreatePoolParams({
@@ -89,7 +89,7 @@ contract CreatePoolScript is Script {
         );
 
         // Pool 5: Tesla Cybertruck Production
-        uint40 pool5BetsCloseAt = uint40(block.timestamp + 604800); // 7 days
+        uint40 pool5BetsCloseAt = uint40(block.timestamp + 60 * 60 * 6);
         uint40 pool5DecisionDate = uint40(block.timestamp + 7776000); // 90 days
         bettingPools.createPool(
             BettingPools.CreatePoolParams({
@@ -107,7 +107,7 @@ contract CreatePoolScript is Script {
         );
 
         // Pool 6: OpenAI's Next CEO
-        uint40 pool6BetsCloseAt = uint40(block.timestamp + 1209600); // 14 days
+        uint40 pool6BetsCloseAt = uint40(block.timestamp + 60 * 60 * 6);
         uint40 pool6DecisionDate = uint40(block.timestamp + 7776000); // 90 days
         bettingPools.createPool(
             BettingPools.CreatePoolParams({
