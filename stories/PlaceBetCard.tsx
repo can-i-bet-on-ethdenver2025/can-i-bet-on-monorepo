@@ -5,16 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PoolStatus } from "@/lib/__generated__/graphql";
-import {
-  parseChainId,
-  shame,
-  USDC_DECIMALS,
-  usdcAmountToDollars,
-} from "@/lib/utils";
+import { parseChainId, USDC_DECIMALS, usdcAmountToDollars } from "@/lib/utils";
 import { BetButton } from "@/stories/BetButton";
 import { useQuery } from "@apollo/client";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { usePrivy, useWallets } from "@privy-io/react-auth";
+import { useWallets } from "@privy-io/react-auth";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 
@@ -70,11 +65,6 @@ export const PlaceBetCard = ({ poolId }: PlaceBetCardProps) => {
   });
 
   const { ready, wallets } = useWallets();
-
-  const betAmount = watch("betAmount");
-  const betAmountInUSDC =
-    parseFloat(betAmount || "0") * Math.pow(10, USDC_DECIMALS);
-
   const {
     data,
     loading,
@@ -98,7 +88,9 @@ export const PlaceBetCard = ({ poolId }: PlaceBetCardProps) => {
       </Card>
     );
   }
-
+  const betAmount = watch("betAmount");
+  const betAmountInUSDC =
+    parseFloat(betAmount || "0") * Math.pow(10, USDC_DECIMALS);
   const totalPool = data?.pool?.totalBets;
   const bettingOpen = data?.pool?.status === PoolStatus.Pending;
   const postiveOption = data?.pool?.options[0] || "Oh, yes";
@@ -111,7 +103,7 @@ export const PlaceBetCard = ({ poolId }: PlaceBetCardProps) => {
 
   // Calculate potential earnings
   const calculateEarnings = (optionTotal: number) => {
-    const bet = parseFloat(betAmount) * Math.pow(10, USDC_DECIMALS); //betAmount is written by user in dollars, so we need to convert it to USDC
+  
     const totalPoolParsed = parseFloat(totalPool); // Total pool comes from contract and is already in USDC
     if (!bet) {
       return 0;
@@ -152,6 +144,17 @@ export const PlaceBetCard = ({ poolId }: PlaceBetCardProps) => {
         </div>
         <div className="text-sm text-gray-500 text-center">
           Potential Earnings
+        </div>
+        <div>
+          Amount: {betAmountInUSDC.toString()}
+          <br />
+          Positive Earnings: {positiveEarnings.toString()}
+          <br />
+          Negative Earnings: {negativeEarnings.toString()}
+          <br />
+          totalPositiveBets: {totalPositiveBets.toString()}
+          <br />
+          totalNegativeBets: {totalNegativeBets.toString()}
         </div>
 
         <div className="grid grid-cols-2 gap-4">
