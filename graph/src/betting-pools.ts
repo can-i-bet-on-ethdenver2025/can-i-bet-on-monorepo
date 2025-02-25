@@ -1,6 +1,7 @@
 import { BigInt, Bytes, dataSource } from "@graphprotocol/graph-ts";
 import {
   BetPlaced as BetPlacedEvent,
+  PayoutClaimed as PayoutClaimedEvent,
   PoolClosed as PoolClosedEvent,
   PoolCreated as PoolCreatedEvent,
   TwitterPostIdSet as TwitterPostIdSetEvent,
@@ -8,6 +9,7 @@ import {
 import {
   Bet,
   BetPlaced,
+  PayoutClaimed,
   Pool,
   PoolClosed,
   PoolCreated,
@@ -72,6 +74,10 @@ export function handleBetPlaced(event: BetPlacedEvent): void {
   bet.transactionHash = event.transaction.hash;
   bet.chainName = networkName;
   bet.chainId = BigInt.fromI32(chainId as i32);
+  bet.payoutClaimed = false;
+  bet.payoutClaimedBlockNumber = null;
+  bet.payoutClaimedBlockTimestamp = null;
+  bet.payoutClaimedTransactionHash = null;
 
   // Update Pool totals and timestamps
   const pool = Pool.load(poolId);
@@ -213,5 +219,42 @@ export function handleTwitterPostIdSet(event: TwitterPostIdSetEvent): void {
   pool.lastUpdatedTransactionHash = event.transaction.hash;
 
   pool.save();
+  entity.save();
+}
+
+export function handlePayoutClaimed(event: PayoutClaimedEvent): void {
+  const betId = Bytes.fromByteArray(Bytes.fromBigInt(event.params.betId));
+  const poolId = Bytes.fromByteArray(Bytes.fromBigInt(event.params.poolId));
+
+  const networkName = dataSource.network();
+  const chainId = chainIdToNetworkName(networkName);
+
+  // Create PayoutClaimed entity
+  const entity = new PayoutClaimed(
+    event.transaction.hash.concatI32(event.logIndex.toI32())
+  );
+  entity.betId = event.params.betId;
+  entity.poolId = event.params.poolId;
+  entity.user = event.params.user;
+  entity.amount = event.params.amount;
+  entity.blockNumber = event.block.number;
+  entity.blockTimestamp = event.block.timestamp;
+  entity.transactionHash = event.transaction.hash;
+  entity.chainName = networkName;
+  entity.chainId = BigInt.fromI32(chainId as i32);
+  entity.bet = betId;
+  entity.pool = poolId;
+
+  // Update Bet entity
+  const bet = Bet.load(betId);
+  if (bet == null) {
+    throw new Error("Bet not found");
+  }
+  bet.payoutClaimed = true;
+  bet.payoutClaimedBlockNumber = event.block.number;
+  bet.payoutClaimedBlockTimestamp = event.block.timestamp;
+  bet.payoutClaimedTransactionHash = event.transaction.hash;
+
+  bet.save();
   entity.save();
 }

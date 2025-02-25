@@ -3,7 +3,6 @@
 import { GET_POOL } from "@/app/queries";
 import { Card, CardContent } from "@/components/ui/card";
 import { PoolStatus } from "@/lib/__generated__/graphql";
-import { shame } from "@/lib/utils";
 import { useQuery } from "@apollo/client";
 import { CountdownTimer } from "./CountdownTimer";
 import { CreatorInfo } from "./CreatorInfo";
@@ -24,24 +23,27 @@ interface TweetCardProps {
 
 const TweetCard = ({ poolId, className = "" }: TweetCardProps) => {
   // Randomly select a tweet ID for now
+  console.log("poolId", poolId);
+
   const {
     data,
     loading,
     error: queryError,
   } = useQuery(GET_POOL, {
-    variables: { poolId: shame(poolId) },
+    variables: { poolId },
   });
+  console.log("data", data);
 
   //TODO Show a skeleton here, not loading
   if (loading) {
     return <div>Loading...</div>;
   }
   if (queryError) {
-    return <div>Error: {queryError.message}</div>;
+    return <div>Query Error: {queryError.message}</div>;
   }
 
-  if (!data?.pool?.xPostId) {
-    return <div>No tweet ID found for pool or pool undefined</div>;
+  if (!data?.pool?.creatorId || !data?.pool?.creatorName) {
+    return <div>No creator ID or name found for pool</div>;
   }
 
   return (
@@ -56,7 +58,13 @@ const TweetCard = ({ poolId, className = "" }: TweetCardProps) => {
               className="justify-center"
             />
           </div>
-          <Tweet id={data?.pool?.xPostId} />
+          {!data?.pool?.xPostId ? (
+            <div className="text-red-500 text-4xl text-center">
+              No tweet ID found for pool
+            </div>
+          ) : (
+            <Tweet id={data?.pool?.xPostId} />
+          )}
           {data?.pool?.status === PoolStatus.Pending &&
           data?.pool?.betsCloseAt ? (
             <CountdownTimer betsCloseAt={data?.pool?.betsCloseAt} />

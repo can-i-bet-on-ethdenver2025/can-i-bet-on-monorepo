@@ -101,13 +101,13 @@ export const BetButton = ({
       };
 
       console.log("Getting signing parameters:", signingParams);
-
       const signingResponse = await fetch("/api/signing/getSigningProps", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(signingParams),
       });
 
+      
       if (!signingResponse.ok) {
         throw new Error(
           `Failed to get signing props: ${signingResponse.statusText}`

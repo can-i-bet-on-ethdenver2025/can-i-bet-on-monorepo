@@ -14,6 +14,10 @@ type Bet @entity {
   amount: BigInt! # uint256
   createdAt: BigInt!
   updatedAt: BigInt!
+  payoutClaimed: Boolean!
+  payoutClaimedBlockNumber: BigInt
+  payoutClaimedBlockTimestamp: BigInt
+  payoutClaimedTransactionHash: Bytes
 
   blockNumber: BigInt!
   blockTimestamp: BigInt!
@@ -128,4 +132,20 @@ type TwitterPostIdSet @entity(immutable: true) {
   poolIntId: BigInt! # uint256
   xPostId: String! # string
   pool: Pool!
+}
+
+type PayoutClaimed @entity(immutable: true) {
+  id: Bytes!
+  betId: BigInt! # uint256
+  poolId: BigInt! # uint256
+  user: Bytes! # address
+  amount: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+  bet: Bet!
+  pool: Pool!
+
+  chainName: String!
+  chainId: BigInt!
 }

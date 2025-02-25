@@ -8,9 +8,9 @@ dataSources:
     name: BettingPools
     network: base-sepolia
     source:
-      address: "0xcD8D8DdE906d50659ebae21E9DbcB6F4C33fe4Eb"
+      address: "0x65883a2bb19a6b0399d318bffc2d9fba1b59fb07"
       abi: BettingPools
-      startBlock: 22331580
+      startBlock: 22369014
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.9
@@ -34,5 +34,7 @@ dataSources:
           handler: handlePoolClosed
         - event: TwitterPostIdSet(indexed uint256,string)
           handler: handleTwitterPostIdSet
+        - event: PayoutClaimed(indexed uint256,indexed uint256,indexed address,uint256)
+          handler: handlePayoutClaimed
       file: ./src/betting-pools.ts
   

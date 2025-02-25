@@ -2,7 +2,7 @@ import { GET_POOL } from "@/app/queries";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { optionColor } from "@/lib/config";
-import { shame, usdcAmountToDollars } from "@/lib/utils";
+import { usdcAmountToDollars } from "@/lib/utils";
 import { useQuery } from "@apollo/client";
 import { FC } from "react";
 import { RatioBar } from "./RatioBar";
@@ -27,7 +27,7 @@ const LoadingSkeleton = () => (
 
 export const CurrentSpreadCard: FC<CurrentSpreadCardProps> = ({ poolId }) => {
   const { data, loading, error } = useQuery(GET_POOL, {
-    variables: { poolId: shame(poolId) },
+    variables: { poolId: poolId },
     fetchPolicy: "no-cache",
   });
 

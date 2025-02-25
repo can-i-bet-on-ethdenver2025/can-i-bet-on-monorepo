@@ -69,7 +69,6 @@ export const PlaceBetCard = ({ poolId }: PlaceBetCardProps) => {
     },
   });
 
-  const privy = usePrivy();
   const { ready, wallets } = useWallets();
 
   const betAmount = watch("betAmount");
@@ -81,7 +80,7 @@ export const PlaceBetCard = ({ poolId }: PlaceBetCardProps) => {
     loading,
     error: queryError,
   } = useQuery(GET_POOL, {
-    variables: { poolId: shame(poolId) },
+    variables: { poolId },
   });
 
   if (loading) {

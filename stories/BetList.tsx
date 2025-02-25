@@ -15,7 +15,7 @@ import {
   BetPlaced_OrderBy,
   OrderDirection,
 } from "@/lib/__generated__/graphql";
-import { shame, usdcAmountToDollars } from "@/lib/utils";
+import { usdcAmountToDollars } from "@/lib/utils";
 import { useQuery } from "@apollo/client";
 import { format } from "date-fns";
 import {
@@ -26,7 +26,6 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { PlayerAddressChip } from "./PlayerAddressChip";
-import { useActiveWallet, usePrivy, useWallets } from "@privy-io/react-auth";
 
 // Add new types for sorting
 
@@ -43,11 +42,9 @@ export const BetList = ({
   loading?: boolean;
   variant?: BetListVariant;
 }) => {
-
-
   const filter: Bet_Filter = {};
   if (poolId) {
-    filter.pool = shame(poolId);
+    filter.pool = poolId;
   }
   if (userId) {
     filter.user = userId;
