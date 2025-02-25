@@ -24,6 +24,7 @@ export const GET_POOLS = gql(`
       status
       imageUrl
       category
+      xPostId
       
       creatorName
       creatorId
@@ -84,6 +85,7 @@ export const GET_BETS = gql(`
       chainId
       chainName
       isDraw
+      xPostId
       }
     }
   }
@@ -106,6 +108,7 @@ export const GET_POOL = gql(`
       status
       chainId
       chainName
+      xPostId
       isDraw
     }
   }

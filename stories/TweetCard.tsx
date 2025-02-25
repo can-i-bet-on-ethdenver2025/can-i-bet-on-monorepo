@@ -1,6 +1,10 @@
 "use client";
 
+import { GET_POOL } from "@/app/queries";
 import { Card, CardContent } from "@/components/ui/card";
+import { PoolStatus } from "@/lib/__generated__/graphql";
+import { shame } from "@/lib/utils";
+import { useQuery } from "@apollo/client";
 import { CountdownTimer } from "./CountdownTimer";
 import { CreatorInfo } from "./CreatorInfo";
 import Tweet from "./Tweet";
@@ -20,16 +24,25 @@ interface TweetCardProps {
 
 const TweetCard = ({ poolId, className = "" }: TweetCardProps) => {
   // Randomly select a tweet ID for now
-  const randomTweetId =
-    SAMPLE_TWEET_IDS[Math.floor(Math.random() * SAMPLE_TWEET_IDS.length)];
+  const {
+    data,
+    loading,
+    error: queryError,
+  } = useQuery(GET_POOL, {
+    variables: { poolId: shame(poolId) },
+  });
 
-  //  const {
-  //    data,
-  //    loading,
-  //    error: queryError,
-  //  } = useQuery(GET_POOL, {
-  //    variables: { poolId: shame(poolId) },
-  //  });
+  //TODO Show a skeleton here, not loading
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+  if (queryError) {
+    return <div>Error: {queryError.message}</div>;
+  }
+
+  if (!data?.pool?.xPostId) {
+    return <div>No tweet ID found for pool or pool undefined</div>;
+  }
 
   return (
     <Card className={className}>
@@ -38,15 +51,18 @@ const TweetCard = ({ poolId, className = "" }: TweetCardProps) => {
           <div className={"flex flex-row gap-2 justify-center"}>
             <p>Pool started by:</p>
             <CreatorInfo
-              creatorId="1" // Hardcoded for now
-              creatorName="@example" // Hardcoded for now
+              creatorId={data?.pool?.creatorId}
+              creatorName={data?.pool?.creatorName}
               className="justify-center"
             />
           </div>
-          <Tweet id={randomTweetId} />
-          <CountdownTimer
-            betsCloseAt={new Date(Date.now() + 1000 * 60 * 60 * 24).getTime()}
-          />
+          <Tweet id={data?.pool?.xPostId} />
+          {data?.pool?.status === PoolStatus.Pending &&
+          data?.pool?.betsCloseAt ? (
+            <CountdownTimer betsCloseAt={data?.pool?.betsCloseAt} />
+          ) : (
+            <div className="text-red-500 font-medium">Pool is closed</div>
+          )}
         </div>
       </CardContent>
     </Card>

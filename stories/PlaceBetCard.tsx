@@ -71,9 +71,7 @@ export const PlaceBetCard = ({ poolId }: PlaceBetCardProps) => {
 
   const privy = usePrivy();
   const { ready, wallets } = useWallets();
-  console.log("ready", ready);
-  console.log("wallets", wallets);
-  console.log("wallet[0]", wallets[0]);
+
   const betAmount = watch("betAmount");
   const betAmountInUSDC =
     parseFloat(betAmount || "0") * Math.pow(10, USDC_DECIMALS);
@@ -132,7 +130,7 @@ export const PlaceBetCard = ({ poolId }: PlaceBetCardProps) => {
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
-        <CardTitle className={"text-center"}>Place a Bet</CardTitle>
+        <CardTitle className={"text-center"}>Place bet</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div>

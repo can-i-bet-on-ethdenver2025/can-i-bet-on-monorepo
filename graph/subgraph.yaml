@@ -35,3 +35,4 @@ dataSources:
         - event: TwitterPostIdSet(indexed uint256,string)
           handler: handleTwitterPostIdSet
       file: ./src/betting-pools.ts
+  

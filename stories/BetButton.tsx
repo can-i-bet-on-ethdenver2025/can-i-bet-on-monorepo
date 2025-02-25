@@ -1,11 +1,10 @@
 //TODO Doesn't support Option A or B, hardcoded to Yes and No
 import { CHAIN_CONFIG, optionColor } from "@/lib/config";
 import { cn } from "@/lib/utils";
-import { useWallets, ConnectedWallet } from "@privy-io/react-auth";
+import { ConnectedWallet, useWallets } from "@privy-io/react-auth";
+import { ethers } from "ethers";
 import { useState } from "react";
 import { Chain } from "viem/chains";
-import { ethers } from "ethers";
-import usdcAbi from "@/contracts/out/MockUSDC.sol/MockUSDC.json";
 
 // Add type definitions
 type ChainConfig = {
@@ -31,7 +30,7 @@ type TypedDataField = {
 };
 
 type RpcRequest = {
-  method: 'eth_signTypedData_v4';
+  method: "eth_signTypedData_v4";
   params: [string, string]; // [address, stringified typed data]
 };
 
@@ -61,26 +60,15 @@ export const BetButton = ({
   amount,
 }: BetButtonProps) => {
   const [isLoading, setIsLoading] = useState(false);
-  const walletData = useWallets();
 
   // In Storybook/development, use mock data if real data isn't available
-  const { ready, wallets } = process.env.STORYBOOK
-    ? {
-        ready: true,
-        wallets: [
-          {
-            address: "0x1234567890123456789012345678901234567890",
-            chainId: 1,
-          },
-        ],
-      }
-    : walletData;
 
+  const { ready, wallets } = useWallets();
   const chainConfig = CHAIN_CONFIG[chainId];
 
-  if (option.length > 24) {
-    throw new Error("Option text cannot be longer than 24 characters");
-  }
+  // if (option.length > 24) {
+  //   throw new Error("Option text cannot be longer than 24 characters");
+  // }
   if (optionIndex < 0 || optionIndex >= optionColor.length) {
     throw new Error(
       `Invalid option index, can only be 0-${optionColor.length - 1}`
@@ -98,29 +86,6 @@ export const BetButton = ({
   });
 
   const buttonStyles = getButtonStyles(color);
-
-  const isDisabled = disabled || !ready || !wallets?.[0] || !chainConfig;
-  const isError =
-    !ready ||
-    !wallets?.[0] ||
-    !chainConfig ||
-    !chainConfig.applicationContractAddress;
-  if (isError) {
-    console.log("Could not render the BetButton: ", {
-      ready,
-      wallets,
-      chainConfig,
-      chainConfigApplicationContractAddress:
-        chainConfig?.applicationContractAddress,
-    });
-  }
-  if (!ready) {
-    return (
-      <div className="animate-pulse h-10 w-48 bg-gray-200 rounded-lg">
-        Loading...
-      </div>
-    );
-  }
 
   const handleClick = async () => {
     try {
@@ -159,7 +124,7 @@ export const BetButton = ({
       }
 
       // Log the wallet address
-      console.log('Wallet Address', wallet.address)
+      console.log("Wallet Address", wallet.address);
 
       // Print the current USDC balance of the wallet for the USDC ERC20 token
       const provider = await wallet.getEthereumProvider();
@@ -171,7 +136,7 @@ export const BetButton = ({
         name: signingData.usdcName,
         version: "1",
         chainId: Number(chainId),
-        verifyingContract: chainConfig.usdcAddress
+        verifyingContract: chainConfig.usdcAddress,
       };
 
       // EIP-2612 standard types for permit
@@ -181,8 +146,8 @@ export const BetButton = ({
           { name: "spender", type: "address" },
           { name: "value", type: "uint256" },
           { name: "nonce", type: "uint256" },
-          { name: "deadline", type: "uint256" }
-        ]
+          { name: "deadline", type: "uint256" },
+        ],
       };
 
       const message = {
@@ -190,10 +155,10 @@ export const BetButton = ({
         spender: chainConfig.applicationContractAddress,
         value: amount,
         nonce: signingData.usdcNonce,
-        deadline: usdcPermitDeadline
+        deadline: usdcPermitDeadline,
       };
 
-      console.log('Permit data to sign:', {
+      console.log("Permit data to sign:", {
         domain: domainData,
         types,
         message,
@@ -201,13 +166,13 @@ export const BetButton = ({
 
       // Sign the permit using EIP-712
       const permitSignature = await provider.request({
-        method: 'eth_signTypedData_v4',
+        method: "eth_signTypedData_v4",
         params: [
           wallet.address,
           JSON.stringify({
             types,
             domain: domainData,
-            primaryType: 'Permit',
+            primaryType: "Permit",
             message,
           }),
         ],
@@ -251,6 +216,25 @@ export const BetButton = ({
       setIsLoading(false);
     }
   };
+  const isDisabled = disabled || !ready || !wallets?.[0] || !chainConfig;
+  const isError =
+    !wallets?.[0] || !chainConfig || !chainConfig.applicationContractAddress;
+  if (isError) {
+    // console.log("Could not render the BetButton: ", {
+    //   ready,
+    //   wallets,
+    //   chainConfig,
+    //   chainConfigApplicationContractAddress:
+    //     chainConfig?.applicationContractAddress,
+    // });
+  }
+  if (!ready) {
+    return (
+      <div className="animate-pulse h-10 w-48 bg-gray-200 rounded-lg">
+        Loading...
+      </div>
+    );
+  }
 
   return (
     <div>

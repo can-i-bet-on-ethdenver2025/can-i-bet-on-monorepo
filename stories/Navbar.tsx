@@ -3,28 +3,87 @@ import {
   PrivyLoginButton,
   PrivyLogoutButton,
 } from "@/components/PrivyLoginButton";
+import MockUSDCAbi from "@/contracts/out/MockUSDC.sol/MockUSDC.json";
+import { CHAIN_CONFIG } from "@/lib/config";
+import { parseChainId, USDC_DECIMALS } from "@/lib/utils";
 import PromptbetLogo from "@/stories/assets/promptbet-logo2.jpg";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
+import { ethers } from "ethers";
 import { Menu, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
-import { NavbarLink } from "./NavbarLink";
+import { useEffect, useState } from "react";
 import { NetworkButton } from "./NetworkButton";
 
 export const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [usdcBalance, setUsdcBalance] = useState<string | null>(null);
+  const [isLoadingBalance, setIsLoadingBalance] = useState(false);
   const { ready, authenticated } = usePrivy();
-  const { wallets } = useWallets();
+  const { ready: readyWallets, wallets } = useWallets();
 
   const handleToggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
   // Get the chain ID from the first wallet if available
-  const currentChainId = wallets?.[0]?.chainId;
+  const currentChainId = parseChainId(wallets?.[0]?.chainId);
 
+  // Fetch USDC balance when wallet is connected
+  useEffect(() => {
+    const fetchUsdcBalance = async () => {
+      if (readyWallets && wallets[0] && currentChainId) {
+        try {
+          setIsLoadingBalance(true);
 
+          // Get chain config for the current chain
+          const chainConfig = CHAIN_CONFIG[currentChainId];
+
+          if (
+            !chainConfig ||
+            chainConfig.usdcAddress ===
+              "0x0000000000000000000000000000000000000000"
+          ) {
+            console.error(
+              "No chain config or usdc address found for chain ID:",
+              currentChainId
+            );
+            setUsdcBalance("N/A");
+            return;
+          }
+
+          // Get provider from wallet
+          const provider = await wallets[0].getEthereumProvider();
+          const ethersProvider = new ethers.BrowserProvider(provider);
+
+          // Create contract instance
+          const usdcContract = new ethers.Contract(
+            chainConfig.usdcAddress,
+            MockUSDCAbi.abi,
+            ethersProvider
+          );
+
+          // Get balance
+          const balance = await usdcContract.balanceOf(wallets[0].address);
+
+          // Format balance (assuming 6 decimals for USDC)
+          const formattedBalance = ethers.formatUnits(balance, USDC_DECIMALS);
+          setUsdcBalance(formattedBalance.replace(".0", ""));
+        } catch (error) {
+          console.error("Error fetching USDC balance:", error);
+          setUsdcBalance("Error");
+        } finally {
+          setIsLoadingBalance(false);
+        }
+      } else {
+        setUsdcBalance(null);
+      }
+    };
+
+    fetchUsdcBalance();
+  }, [readyWallets, wallets, currentChainId]);
+
+  // Get the chain ID from the first wallet if available
   return (
     <nav className="border-b">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -40,12 +99,16 @@ export const Navbar = () => {
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-4">
-          <NavbarLink href="/pools">Browse pools</NavbarLink>
-          <NavbarLink href="/activity">
-            Recent activity (NOT IMPLEMENTED)
-          </NavbarLink>
-          {ready && authenticated && (
-            <NetworkButton chainId={currentChainId} size="small" />
+          {ready && authenticated && readyWallets && wallets[0] && (
+            <>
+              {!isLoadingBalance && (
+                <div className="flex-col text-sm font-medium min-w-24 text-center border rounded-full">
+                  <div className="text-xs text-gray-500">Balance</div>
+                  <div>${usdcBalance}</div>
+                </div>
+              )}
+              <NetworkButton chainId={currentChainId} size="small" />
+            </>
           )}
           {ready && authenticated ? (
             <PrivyLogoutButton />
@@ -68,12 +131,16 @@ export const Navbar = () => {
       {isMenuOpen && (
         <div className="md:hidden border-t">
           <div className="container mx-auto px-4 py-2 flex flex-col gap-2">
-            <NavbarLink href="/pools">Browse pools</NavbarLink>
-            <NavbarLink href="/activity">
-              Recent activity (NOT IMPLEMENTED)
-            </NavbarLink>
-            {ready && authenticated && (
-              <NetworkButton chainId={currentChainId} size="small" />
+            {ready && authenticated && readyWallets && wallets[0] && (
+              <>
+                {!isLoadingBalance && (
+                  <div className="flex-col text-sm font-medium min-w-24 text-center border rounded-full">
+                    <div className="text-xs text-gray-500">Balance</div>
+                    <div>${usdcBalance}</div>
+                  </div>
+                )}
+                <NetworkButton chainId={currentChainId} size="small" />
+              </>
             )}
             {ready && authenticated ? (
               <div>

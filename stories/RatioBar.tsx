@@ -30,10 +30,6 @@ export const RatioBar: FC<RatioBarProps> = ({
   const total = items.reduce((sum, item) => sum + item.amount, 0);
   const hasItems = items.length > 0;
   const hasValue = total > 0;
-  console.log("items", items);
-  console.log("total", total);
-  console.log("hasItems", hasItems);
-  console.log("hasValue", hasValue);
 
   const getPercentage = (amount: number) => {
     if (!hasValue) return 0;

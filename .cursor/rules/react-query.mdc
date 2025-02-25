@@ -1,6 +1,7 @@
 ---
-description: This rule is useful for when we need to fetch data from an external api anc can also be used as a wapper for fetching data on chain
+description: This rule is useful for when we need to fetch data from an external api that is NOT a graphql endpoint. Can also be used as a wapper for fetching data on chain
 globs: *.ts, *.tsx
+alwaysApply: false
 ---
 # React Query (TanStack Query) Usage
 

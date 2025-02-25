@@ -46,6 +46,7 @@ const defaultPool = {
   gradedTransactionHash: "0x0000000000000000000000000000000000000000",
   chainId: "84532",
   chainName: "base-sepolia",
+  xPostId: "1893049568805486621",
 };
 
 export const Default: Story = {
