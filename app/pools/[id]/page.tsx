@@ -1,11 +1,8 @@
 "use client";
 
 import { GET_POOL } from "@/app/queries";
-import { Card, CardContent } from "@/components/ui/card";
-import { PoolStatus } from "@/lib/__generated__/graphql";
 import { shame } from "@/lib/utils";
 import { Activity } from "@/stories/Activity";
-import { CountdownTimer } from "@/stories/CountdownTimer";
 import { CurrentSpreadCard } from "@/stories/CurrentSpreadCard";
 import { PlaceBetCard } from "@/stories/PlaceBetCard";
 import TweetCard from "@/stories/TweetCard";
@@ -37,7 +34,12 @@ export default function PoolDetailsPage({ params }: { params: Params }) {
 
       <CurrentSpreadCard poolId={id} />
       <PlaceBetCard poolId={id} />
-      <Activity poolId={id} showQuestion={false} showPoolImage={false} maxEntries={5}/>
+      <Activity
+        poolId={id}
+        showQuestion={false}
+        showPoolImage={false}
+        maxEntries={5}
+      />
     </div>
   );
 }

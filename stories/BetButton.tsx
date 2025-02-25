@@ -6,29 +6,6 @@ import { ethers } from "ethers";
 import { useState } from "react";
 import { Chain } from "viem/chains";
 
-// Add type definitions
-type ChainConfig = {
-  chain: Chain;
-  applicationContractAddress: `0x${string}`;
-  iconUrl: string;
-  backgroundColor: string;
-  usdcAddress: `0x${string}`;
-};
-
-// EIP-712 domain type
-type Domain = {
-  name: string;
-  version: string;
-  chainId: number;
-  verifyingContract: string;
-};
-
-// EIP-712 types
-type TypedDataField = {
-  name: string;
-  type: string;
-};
-
 type RpcRequest = {
   method: "eth_signTypedData_v4";
   params: [string, string]; // [address, stringified typed data]
