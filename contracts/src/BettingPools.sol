@@ -101,6 +101,7 @@ contract BettingPools is Ownable, FunctionsClient {
     error BetsCloseTimeInPast();
     error BetsCloseAfterDecision();
     error PoolNotOpen();
+    error PoolDoesntExist();
     error BettingPeriodClosed();
     error InvalidOptionIndex();
     error BetAlreadyExists();
@@ -159,6 +160,7 @@ contract BettingPools is Ownable, FunctionsClient {
     }
 
     function setTwitterPostId(uint256 poolId, string calldata twitterPostId) external onlyOwner {
+        if (pools[poolId].status == PoolStatus.NONE) revert PoolDoesntExist();
         pools[poolId].twitterPostId = twitterPostId;
         emit TwitterPostIdSet(poolId, twitterPostId);
     }
@@ -290,6 +292,7 @@ contract BettingPools is Ownable, FunctionsClient {
     }
 
     function claimPayouts(uint256[] calldata betIds) external {
+
       for (uint256 i = 0; i < betIds.length; i++) {
         uint256 betId = betIds[i];
         if (pools[bets[betId].poolId].status != PoolStatus.GRADED) continue;
