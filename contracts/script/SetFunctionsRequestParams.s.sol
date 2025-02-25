@@ -24,9 +24,7 @@ contract SetFunctionsRequestParams is Script {
 
         // Set the encrypted secrets reference
         bettingPools.setFunctionsSecrets(
-          bytes(
-            "0x7bbed2fe8ed50dd44ab25187c03830ba02413af27fcbd0d0fb8b0b1337b8c0ae84d1560a574c46cb2195a7c4ddd6ea1ad22ba80d56139705483c09cf203a73e4d34b1208cb2d1b506cd1d57b87a161de8aa72c975aaef37f34c84f1e94033c0aea08375312e37fe7a1e7a3e3567d3256f2524557a62853723e62c82c734e58a9802874ac3b0f847b5f954bacbe51cbb1158c1aa9f238cebdbcef0ad1902fdd00ad"
-          )
+            hex"0397fddeff31f9dbf668f7e0ad26e499025ac4eb64645693dfb2413670728a323d3a8d02653ec4f34ac56ba5fd7ee39214b6384f2565abb3812312411560772df8ea95d4a8fff1ee4bd447579ee54617002d80c66bbec04cd181e28c69487db8a274ab97fff4c574cf3dd8465f4bb815cd15806a8e3bcedf27aa36a776a567efe5fb461be343f69617878ba0f297b7738e20817eb9e008bb60937e320681f5b7c3"
         );
 
         vm.stopBroadcast();

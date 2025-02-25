@@ -2,15 +2,13 @@
 pragma solidity ^0.8.24;
 
 import {ERC20Permit} from "../lib/openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Permit.sol";
-import {EIP712} from "../lib/openzeppelin-contracts/contracts/utils/cryptography/EIP712.sol";
 import {ERC20} from "../lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
 import {Ownable} from "../lib/openzeppelin-contracts/contracts/access/Ownable.sol";
 import {ECDSA} from "../lib/openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol";
 import {FunctionsClient} from "../lib/chainlink/contracts/src/v0.8/functions/v1_0_0/FunctionsClient.sol";
 import {FunctionsRequest} from "../lib/chainlink/contracts/src/v0.8/functions/v1_0_0/libraries/FunctionsRequest.sol";
-import {AutomationCompatibleInterface} from "../lib/chainlink/contracts/src/v0.8/automation/AutomationCompatible.sol";
 
-contract BettingPools is EIP712, Ownable, FunctionsClient, AutomationCompatibleInterface {
+contract BettingPools is Ownable, FunctionsClient {
     using FunctionsRequest for FunctionsRequest.Request;
 
     // Enums
@@ -19,7 +17,6 @@ contract BettingPools is EIP712, Ownable, FunctionsClient, AutomationCompatibleI
         PENDING,
         GRADED,
         REGRADED //Disputed (unused for now)
-
     }
 
     // Structs
@@ -93,8 +90,6 @@ contract BettingPools is EIP712, Ownable, FunctionsClient, AutomationCompatibleI
 
     mapping(bytes32 functionsRequestId => uint256 poolId) public functionsRequestToPoolId;
 
-    uint256[] bettingPoolsToPayOut; // Array of poolIds which need to be paid out after the bet is graded
-
     // Functions Config
     uint64 public subscriptionId;
     bytes32 public donId;
@@ -119,6 +114,8 @@ contract BettingPools is EIP712, Ownable, FunctionsClient, AutomationCompatibleI
     error BettingPeriodNotClosed();
     error PoolNotGraded();
     error GradingError();
+    error BetAlreadyPaidOut();
+    error NotBetOwner();
 
     // Events
     event PoolCreated(uint256 poolId, CreatePoolParams params);
@@ -127,13 +124,10 @@ contract BettingPools is EIP712, Ownable, FunctionsClient, AutomationCompatibleI
         uint256 indexed betId, uint256 indexed poolId, address indexed user, uint256 optionIndex, uint256 amount
     );
     event TwitterPostIdSet(uint256 indexed poolId, string twitterPostId);
+    event PayoutClaimed(uint256 indexed betId, uint256 indexed poolId, address indexed user, uint256 amount);
 
-    constructor(address _functionsRouter, address _usdc)
-        EIP712("PromptBet", "0.0.1")
-        Ownable(msg.sender)
-        FunctionsClient(_functionsRouter)
-    {
-        usdc = ERC20Permit(_usdc);
+    constructor(address _functionsRouter, address _usdc) Ownable(msg.sender) FunctionsClient(_functionsRouter) {
+      usdc = ERC20Permit(_usdc);
     }
 
     function createPool(CreatePoolParams calldata params) external onlyOwner returns (uint256 poolId) {
@@ -291,62 +285,35 @@ contract BettingPools is EIP712, Ownable, FunctionsClient, AutomationCompatibleI
         } else {
             revert("Bet cannot be graded");
         }
-
-        bettingPoolsToPayOut.push(poolId);
     }
 
-    // TODO: This implementation of using Chainlink Automation to "push" payouts will break
-    // if there are too many pools or bets and the gas limit is exceeded.
-    // In the future, we will need to implement a more efficient payout mechanism.
-    // (Maybe a "pull" model?)
+    function claimPayouts(uint256[] calldata betIds) external {
+      for (uint256 i = 0; i < betIds.length; i++) {
+        uint256 betId = betIds[i];
+        if (pools[bets[betId].poolId].status != PoolStatus.GRADED) continue;
+        if (bets[betId].isPayedOut) continue;
+        
+        bets[betId].isPayedOut = true;
+        uint256 poolId = bets[betId].poolId;
 
-    function checkUpkeep(bytes calldata) external view override returns (bool upkeepNeeded, bytes memory performData) {
-        upkeepNeeded = bettingPoolsToPayOut.length > 0;
-        performData = abi.encode(bettingPoolsToPayOut[0]);
-    }
-
-    function performUpkeep(bytes calldata performData) external override {
-        uint256 poolId = abi.decode(performData, (uint256));
-        Pool storage pool = pools[poolId];
-
-        if (pool.status != PoolStatus.GRADED) revert PoolNotGraded();
-        if (block.timestamp < pool.betsCloseAt) revert BettingPeriodNotClosed();
-
-        if (pool.isDraw) {
-            // Refund all bets
-            for (uint256 i = 0; i < pool.betIds.length; i++) {
-                Bet storage bet = bets[pool.betIds[i]];
-                usdc.transfer(bet.owner, bet.amount);
-            }
-        } else {
-            // Payout the winning bet
-            for (uint256 i = 0; i < pool.betIds.length; i++) {
-                uint256 loosingOption = pool.winningOption == 0 ? 1 : 0;
-                Bet storage bet = bets[pool.betIds[i]];
-                if (bet.option == pool.winningOption) {
-                    uint256 winAmount =
-                        (bet.amount * pool.betTotals[loosingOption]) / pool.betTotals[pool.winningOption] + bet.amount;
-                    uint256 fee = (winAmount * PAYOUT_FEE_BP) / 10000;
-                    uint256 payout = winAmount - fee;
-                    usdc.transfer(bet.owner, payout);
-                    usdc.transfer(owner(), fee);
-                    bets[pool.betIds[i]].isPayedOut = true;
-                }
-            }
+        // If it is a draw or there are no bets on one side or the other, refund the bet
+        if (pools[poolId].isDraw || pools[poolId].betTotals[0] == 0 || pools[poolId].betTotals[1] == 0) {
+          usdc.transfer(bets[betId].owner, bets[betId].amount);
+          continue;
         }
 
-        // Remove the pool from the array of pools to pay out
-        uint256 index = 0;
-        for (uint256 i = 0; i < bettingPoolsToPayOut.length; i++) {
-            if (bettingPoolsToPayOut[i] == poolId) {
-                index = i;
-            }
-        }
-        bettingPoolsToPayOut[index] = bettingPoolsToPayOut[bettingPoolsToPayOut.length - 1];
-        bettingPoolsToPayOut.pop();
-    }
+        uint256 loosingOption = pools[poolId].winningOption == 0 ? 1 : 0;
 
-    function getHash(bytes32 structHash) public view returns (bytes32) {
-        return _hashTypedDataV4(structHash);
+        if (bets[betId].option == pools[poolId].winningOption) {
+          uint256 winAmount =
+            (bets[betId].amount * pools[poolId].betTotals[loosingOption]) /
+              pools[poolId].betTotals[pools[poolId].winningOption] + bets[betId].amount;
+          uint256 fee = (winAmount * PAYOUT_FEE_BP) / 10000;
+          uint256 payout = winAmount - fee;
+          usdc.transfer(bets[betId].owner, payout);
+          usdc.transfer(owner(), fee);
+          emit PayoutClaimed(betId, poolId, bets[betId].owner, payout);
+        }
+      }
     }
 }
