@@ -65,6 +65,9 @@ export const BetButton = ({
   const buttonStyles = getButtonStyles(color);
 
   const handleClick = async () => {
+    console.log("Handling click");
+
+    const embeddedWallet = wallets.find((wallet) => wallet.walletClientType === 'privy')!;
     try {
       setIsLoading(true);
 
@@ -74,7 +77,7 @@ export const BetButton = ({
         poolId,
         optionIndex,
         amount,
-        userWalletAddress: wallets?.[0]?.address,
+        userWalletAddress: embeddedWallet.address,
       };
 
       console.log("Getting signing parameters:", signingParams);
@@ -94,17 +97,15 @@ export const BetButton = ({
       const signingData = await signingResponse.json();
       console.log("Received signing parameters:", signingData);
 
-      // Generate USDC permit signature using Privy wallet
-      const wallet = wallets[0] as ExtendedConnectedWallet;
-      if (!wallet?.getEthereumProvider) {
+      if (!embeddedWallet?.getEthereumProvider) {
         throw new Error("Wallet does not support Ethereum provider");
       }
 
       // Log the wallet address
-      console.log("Wallet Address", wallet.address);
+      console.log("Wallet Address", embeddedWallet.address);
 
       // Print the current USDC balance of the wallet for the USDC ERC20 token
-      const provider = await wallet.getEthereumProvider();
+      const provider = await embeddedWallet.getEthereumProvider();
 
       const usdcPermitDeadline = Math.floor(Date.now() / 1000) + 3600; // 1 hour from now
 
@@ -128,7 +129,7 @@ export const BetButton = ({
       };
 
       const message = {
-        owner: wallet.address,
+        owner: embeddedWallet.address,
         spender: chainConfig.applicationContractAddress,
         value: amount,
         nonce: signingData.usdcNonce,
@@ -145,7 +146,7 @@ export const BetButton = ({
       const permitSignature = await provider.request({
         method: "eth_signTypedData_v4",
         params: [
-          wallet.address,
+          embeddedWallet.address,
           JSON.stringify({
             types,
             domain: domainData,
@@ -165,7 +166,7 @@ export const BetButton = ({
         poolId,
         optionIndex,
         amount,
-        walletAddress: wallet.address,
+        walletAddress: embeddedWallet.address,
         permitSignature: { v, r, s },
         usdcPermitDeadline,
       };
