@@ -47,6 +47,12 @@ export const BetButton = ({
       login();
       return;
     }
+
+    // If the user is not signed in with Privy, show the popup to allow them to sign in
+    if (!authenticated) {
+      login();
+      return;
+    }
     const embeddedWallet = wallets.find(
       (wallet) => wallet.walletClientType === "privy"
     )!;
@@ -70,7 +76,7 @@ export const BetButton = ({
       setIsLoading(false);
     }
   };
-  const isDisabled = disabled || !ready || !wallets?.[0] || !chainConfig;
+  //const isDisabled = disabled || !ready || !wallets?.[0] || !chainConfig;
 
   const buttonStyles = {
     // selected: `bg-${color} text-white border-${color} font-bold`,
@@ -91,8 +97,8 @@ export const BetButton = ({
   //     </div>
   //   );
   // }
-  const isError =
-    !wallets?.[0] || !chainConfig || !chainConfig.applicationContractAddress;
+  // const isError =
+  //   !wallets?.[0] || !chainConfig || !chainConfig.applicationContractAddress;
 
   // if (isError) {
   //   console.log("Could not render the BetButton: ", {
@@ -112,9 +118,9 @@ export const BetButton = ({
         "w-42 h-32 px-4 font-medium fond-bold rounded-xl",
         "flex items-center justify-center font-bold",
         `hover:${colorClassnames.backgroundColor}/20`,
-        isDisabled || (isError && buttonStyles.disabled)
+        //isDisabled || (isError && buttonStyles.disabled)
       )}
-      disabled={isDisabled || isError || isLoading}
+      disabled={isLoading}
       type="button"
       onClick={handleClick}
       style={{

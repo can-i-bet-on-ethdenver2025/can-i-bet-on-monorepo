@@ -13,11 +13,14 @@ export const useUsdcBalance = () => {
   const { ready: readyWallets, wallets } = useWallets();
 
   // Get chainId from wallet
-  const currentChainId = parseChainId(wallets?.[0]?.chainId || 84532);
+  const currentChainId = parseChainId(84532);
+  const embeddedWallet = wallets.find(
+    (wallet) => wallet.walletClientType === "privy"
+  )!;
 
   useEffect(() => {
     const fetchUsdcBalance = async () => {
-      if (readyWallets && wallets[0] && currentChainId) {
+      if (readyWallets && embeddedWallet && currentChainId) {
         try {
           setIsLoadingBalance(true);
 
@@ -38,7 +41,7 @@ export const useUsdcBalance = () => {
           }
 
           // Get provider from wallet
-          const provider = await wallets[0].getEthereumProvider();
+          const provider = await embeddedWallet.getEthereumProvider();
           const ethersProvider = new ethers.BrowserProvider(provider);
 
           // Create contract instance
@@ -49,7 +52,7 @@ export const useUsdcBalance = () => {
           );
 
           // Get balance
-          const balance = await usdcContract.balanceOf(wallets[0].address);
+          const balance = await usdcContract.balanceOf(embeddedWallet.address);
 
           // Format balance (assuming 6 decimals for USDC)
           const formattedBalance = ethers.formatUnits(balance, USDC_DECIMALS);

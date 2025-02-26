@@ -26,13 +26,17 @@ export const Navbar = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
+  const embeddedWallet = wallets.find(
+    (wallet) => wallet.walletClientType === "privy"
+  )!;
+
   // Get the chain ID from the first wallet if available
-  const currentChainId = parseChainId(wallets?.[0]?.chainId);
+  const currentChainId = parseChainId(84532);
 
   // Fetch USDC balance when wallet is connected
   useEffect(() => {
     const fetchUsdcBalance = async () => {
-      if (readyWallets && wallets[0] && currentChainId) {
+      if (readyWallets && embeddedWallet && currentChainId) {
         try {
           setIsLoadingBalance(true);
 
@@ -53,7 +57,7 @@ export const Navbar = () => {
           }
 
           // Get provider from wallet
-          const provider = await wallets[0].getEthereumProvider();
+          const provider = await embeddedWallet.getEthereumProvider();
           const ethersProvider = new ethers.BrowserProvider(provider);
 
           // Create contract instance
@@ -64,7 +68,7 @@ export const Navbar = () => {
           );
 
           // Get balance
-          const balance = await usdcContract.balanceOf(wallets[0].address);
+          const balance = await usdcContract.balanceOf(embeddedWallet.address);
 
           // Format balance (assuming 6 decimals for USDC)
           const formattedBalance = ethers.formatUnits(balance, USDC_DECIMALS);
@@ -99,7 +103,7 @@ export const Navbar = () => {
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-4">
-          {ready && authenticated && readyWallets && wallets[0] && (
+            {ready && authenticated && readyWallets && embeddedWallet && (
             <>
               {!isLoadingBalance && (
                 <div className="flex-col text-sm font-medium min-w-24 text-center border rounded-full">
@@ -131,7 +135,7 @@ export const Navbar = () => {
       {isMenuOpen && (
         <div className="md:hidden border-t">
           <div className="container mx-auto px-4 py-2 flex flex-col gap-2">
-            {ready && authenticated && readyWallets && wallets[0] && (
+            {ready && authenticated && readyWallets && embeddedWallet && (
               <>
                 {!isLoadingBalance && (
                   <div className="flex-col text-sm font-medium min-w-24 text-center border rounded-full">
