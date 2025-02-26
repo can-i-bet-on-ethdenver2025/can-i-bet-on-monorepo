@@ -55,7 +55,11 @@ A button component for betting options that supports:
     },
     disabled: {
       control: "boolean",
-      description: "Manually disable the button",
+      description:
+        "DEPRECATED: Manually disable the button. This prop is no longer used and will be removed in a future version.",
+      table: {
+        category: "Deprecated",
+      },
     },
     poolId: {
       control: "text",
@@ -91,9 +95,15 @@ export const OptionASelected: Story = {
 };
 
 export const OptionADisabled: Story = {
+  name: "Option A (Loading State)",
   args: {
     ...OptionA.args,
-    disabled: true,
+  },
+  parameters: {
+    docs: {
+      description:
+        "This story shows the button in a loading state (previously shown as disabled)",
+    },
   },
 };
 
@@ -116,9 +126,15 @@ export const OptionBSelected: Story = {
 };
 
 export const OptionBDisabled: Story = {
+  name: "Option B (Loading State)",
   args: {
     ...OptionB.args,
-    disabled: true,
+  },
+  parameters: {
+    docs: {
+      description:
+        "This story shows the button in a loading state (previously shown as disabled)",
+    },
   },
 };
 
@@ -141,9 +157,15 @@ export const OptionCSelected: Story = {
 };
 
 export const OptionCDisabled: Story = {
+  name: "Option C (Loading State)",
   args: {
     ...OptionC.args,
-    disabled: true,
+  },
+  parameters: {
+    docs: {
+      description:
+        "This story shows the button in a loading state (previously shown as disabled)",
+    },
   },
 };
 
@@ -166,9 +188,15 @@ export const OptionDSelected: Story = {
 };
 
 export const OptionDDisabled: Story = {
+  name: "Option D (Loading State)",
   args: {
     ...OptionD.args,
-    disabled: true,
+  },
+  parameters: {
+    docs: {
+      description:
+        "This story shows the button in a loading state (previously shown as disabled)",
+    },
   },
 };
 
@@ -191,9 +219,15 @@ export const OptionESelected: Story = {
 };
 
 export const OptionEDisabled: Story = {
+  name: "Option E (Loading State)",
   args: {
     ...OptionE.args,
-    disabled: true,
+  },
+  parameters: {
+    docs: {
+      description:
+        "This story shows the button in a loading state (previously shown as disabled)",
+    },
   },
 };
 

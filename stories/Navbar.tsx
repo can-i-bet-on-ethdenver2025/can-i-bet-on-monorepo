@@ -72,7 +72,8 @@ export const Navbar = () => {
 
           // Format balance (assuming 6 decimals for USDC)
           const formattedBalance = ethers.formatUnits(balance, USDC_DECIMALS);
-          setUsdcBalance(formattedBalance.replace(".0", ""));
+          // Remove all decimal places by parsing to float and then to integer
+          setUsdcBalance(Math.floor(parseFloat(formattedBalance)).toString());
         } catch (error) {
           console.error("Error fetching USDC balance:", error);
           setUsdcBalance("Error");
@@ -103,7 +104,7 @@ export const Navbar = () => {
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-4">
-            {ready && authenticated && readyWallets && embeddedWallet && (
+          {ready && authenticated && readyWallets && embeddedWallet && (
             <>
               {!isLoadingBalance && (
                 <div className="flex-col text-sm font-medium min-w-24 text-center border rounded-full">

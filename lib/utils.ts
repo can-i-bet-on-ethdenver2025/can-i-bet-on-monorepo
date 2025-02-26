@@ -46,7 +46,7 @@ export function usdcAmountToDollars(amount: number | string): string {
   } else {
     amountValue = amount;
   }
-  return `$${(amountValue / Math.pow(10, USDC_DECIMALS)).toFixed(2)}`;
+  return `$${(amountValue / Math.pow(10, USDC_DECIMALS)).toFixed(0)}`;
 }
 
 //TODO Redundant
@@ -57,7 +57,7 @@ export function usdcAmountToDollarsNumber(amount: number | string): number {
   } else {
     amountValue = amount;
   }
-  return amountValue / Math.pow(10, USDC_DECIMALS);
+  return Math.round(amountValue / Math.pow(10, USDC_DECIMALS));
 }
 
 export const bigintToHexString = (n: bigint) => {

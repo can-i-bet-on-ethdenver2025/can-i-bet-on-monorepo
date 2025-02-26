@@ -2,6 +2,7 @@ import { GET_POOL } from "@/app/queries";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { GetPoolQuery } from "@/lib/__generated__/graphql";
 import { optionColor } from "@/lib/config";
 import { usdcAmountToDollars } from "@/lib/utils";
 import { useQuery } from "@apollo/client";
@@ -9,7 +10,9 @@ import { FC } from "react";
 import { RatioBar } from "./RatioBar";
 
 interface CurrentSpreadCardProps {
-  poolId: string;
+  poolId?: string;
+  pool?: GetPoolQuery["pool"];
+  loading?: boolean;
   showTitle?: boolean;
   cardClassName?: string;
   showTotalBets?: boolean;
@@ -32,20 +35,31 @@ const LoadingSkeleton = () => (
 
 export const CurrentSpreadCard: FC<CurrentSpreadCardProps> = ({
   poolId,
+  pool: propPool,
+  loading: propLoading,
   showTitle = true,
   cardClassName = "w-full max-w-md mx-auto",
   showTotalBets = true,
 }) => {
-  const { data, loading, error } = useQuery(GET_POOL, {
-    variables: { poolId: poolId },
+  const {
+    data,
+    loading: queryLoading,
+    error,
+  } = useQuery(GET_POOL, {
+    variables: { poolId: poolId || "" },
     fetchPolicy: "no-cache",
+    skip: !poolId || !!propPool,
   });
 
+  // Use either the provided pool or the one from the query
+  const pool = propPool || data?.pool;
+  const loading = propLoading || queryLoading;
+
   // Add this for debugging
-  console.log("Pool data:", data?.pool);
+  console.log("Pool data:", pool);
 
   if (loading) return <LoadingSkeleton />;
-  if (error) {
+  if (error || !pool) {
     return (
       <Card className={cardClassName}>
         <CardContent className="py-4">
@@ -59,13 +73,13 @@ export const CurrentSpreadCard: FC<CurrentSpreadCardProps> = ({
 
   const ratioItems = [
     {
-      label: data?.pool?.options[0] || "Oh, yes",
-      amount: parseInt(data?.pool?.totalBetsByOption[0]) || 0, // Ensure number
+      label: pool.options[0] || "Oh, yes",
+      amount: parseInt(pool.totalBetsByOption[0]) || 0, // Ensure number
       color: "hsl(var(--option-a-color))",
     },
     {
-      label: data?.pool?.options[1] || "Oh, No",
-      amount: parseInt(data?.pool?.totalBetsByOption[1]) || 0, // Ensure number
+      label: pool.options[1] || "Oh, No",
+      amount: parseInt(pool.totalBetsByOption[1]) || 0, // Ensure number
       color: "hsl(var(--option-b-color))",
     },
   ];
@@ -80,13 +94,13 @@ export const CurrentSpreadCard: FC<CurrentSpreadCardProps> = ({
           <CardTitle className={"text-center"}>Current Spread</CardTitle>
         </CardHeader>
       )}
-      <CardContent className="pt-8 space-y-4">
+      <CardContent className="pt-2 space-y-3">
         <div className="flex flex-col items-center">
-          <RatioBar items={ratioItems} className="mb-2" />
+          <RatioBar items={ratioItems} className="mb-1" />
         </div>
 
         <div className="flex-col gap-4">
-          {data?.pool?.options.map((option: string, index: number) => (
+          {pool.options.map((option: string, index: number) => (
             <div key={index} className="flex">
               <div
                 className={`text-lg font-bold mb-2 text-${optionColor[index]}`}
@@ -94,7 +108,7 @@ export const CurrentSpreadCard: FC<CurrentSpreadCardProps> = ({
                 {option}
               </div>
               <div className="text-lg font-semibold ml-auto">
-                {usdcAmountToDollars(data?.pool?.totalBetsByOption[index] || 0)}
+                {usdcAmountToDollars(pool.totalBetsByOption[index] || 0)}
               </div>
             </div>
           ))}
@@ -106,7 +120,7 @@ export const CurrentSpreadCard: FC<CurrentSpreadCardProps> = ({
               <div className="flex mt-2">
                 <div className="text-lg text-white font-bold">Total bets</div>
                 <div className="text-lg text-white font-semibold ml-auto">
-                  {usdcAmountToDollars(data?.pool?.totalBets || 0)}
+                  {usdcAmountToDollars(pool.totalBets || 0)}
                 </div>
               </div>
             </>

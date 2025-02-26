@@ -19,6 +19,7 @@ export default function PoolDetailsPage({ params }: { params: Params }) {
     variables: {
       poolId: id,
     },
+    pollInterval: 3000,
   });
 
   if (poolLoading) {
@@ -30,8 +31,10 @@ export default function PoolDetailsPage({ params }: { params: Params }) {
   return (
     <div className="mx-auto py-8 flex flex-col gap-4">
       <TweetCard poolId={id} className="w-full max-w-md mx-auto" />
-      <CurrentSpreadCard poolId={id} />
-      <PlaceBetCard poolId={id} />
+      <CurrentSpreadCard pool={pool?.pool} loading={poolLoading} />
+      {pool?.pool?.status === "PENDING" && (
+        <PlaceBetCard pool={pool.pool} loading={poolLoading} />
+      )}
       <Activity
         poolId={id}
         showQuestion={false}

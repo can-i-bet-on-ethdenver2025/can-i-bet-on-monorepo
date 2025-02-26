@@ -56,7 +56,8 @@ export const useUsdcBalance = () => {
 
           // Format balance (assuming 6 decimals for USDC)
           const formattedBalance = ethers.formatUnits(balance, USDC_DECIMALS);
-          setUsdcBalance(formattedBalance.replace(".0", ""));
+          // Remove all decimal places by parsing to float and then to integer
+          setUsdcBalance(Math.floor(parseFloat(formattedBalance)).toString());
         } catch (error) {
           console.error("Error fetching USDC balance:", error);
           setUsdcBalance("0");
@@ -69,7 +70,7 @@ export const useUsdcBalance = () => {
     };
 
     fetchUsdcBalance();
-  }, [readyWallets, wallets, currentChainId]);
+  }, [readyWallets, wallets, currentChainId, embeddedWallet]);
 
   return { usdcBalance, isLoadingBalance, currentChainId };
 };

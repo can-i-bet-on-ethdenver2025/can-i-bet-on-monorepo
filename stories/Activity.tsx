@@ -6,65 +6,12 @@ import {
   GetBetsQuery,
   OrderDirection,
 } from "@/lib/__generated__/graphql";
-import { gql, useQuery, useSubscription } from "@apollo/client";
-import { FC, useEffect, useState } from "react";
+import { useQuery } from "@apollo/client";
+import { FC, useEffect, useMemo, useState } from "react";
 import { ActivityLine } from "./ActivityLine";
 
 // Query to fetch initial data
 //TODO Try using fragments again, repeating common fields takes up space unnecessarily
-
-// Subscription for real-time updates
-export const GET_BETS_SUBSCRIPTION = gql`
-  subscription GetBetsSubscription($filter: Bet_filter) {
-    bets(orderBy: blockTimestamp, orderDirection: desc, where: $filter) {
-      id
-      betIntId
-      optionIndex
-      amount
-      user
-      poolIntId
-      blockNumber
-      blockTimestamp
-      transactionHash
-      chainId
-      chainName
-      createdAt
-      updatedAt
-      poolIdHex
-      pool {
-        id
-        poolIntId
-        question
-        options
-        totalBets
-        totalBetsByOption
-        selectedOption
-        status
-        decisionDate
-        betsCloseAt
-        creatorId
-        creatorName
-        imageUrl
-        chainId
-        chainName
-        isDraw
-        xPostId
-        category
-        closureCriteria
-        closureInstructions
-        createdBlockNumber
-        createdBlockTimestamp
-        createdTransactionHash
-        gradedBlockNumber
-        gradedBlockTimestamp
-        gradedTransactionHash
-        lastUpdatedBlockNumber
-        lastUpdatedBlockTimestamp
-        lastUpdatedTransactionHash
-      }
-    }
-  }
-`;
 
 export const Activity: FC<{
   maxEntries?: number;
@@ -78,56 +25,72 @@ export const Activity: FC<{
   showPoolImage = true,
 }) => {
   // State to store combined data from query and subscription
-  const [activities, setActivities] = useState<GetBetsQuery["bets"]>([]);
+  const [poolBets, setPoolBets] = useState<GetBetsQuery["bets"]>([]);
   const [showAdditionalBets, setShowAdditionalBets] = useState(0);
 
   // Create filter based on poolId if provided
-  const filter = poolId ? { pool: poolId } : {};
+  const filter = useMemo(() => (poolId ? { pool: poolId } : {}), [poolId]);
 
-  // Query for initial data
-  const { data: queryData, loading: queryLoading } = useQuery(GET_BETS, {
+  // Query for initial data with polling for real-time updates
+  const {
+    data: queryData,
+    loading: queryLoading,
+    subscribeToMore,
+  } = useQuery(GET_BETS, {
     variables: {
       first: maxEntries + showAdditionalBets,
       filter,
       orderBy: Bet_OrderBy.BlockTimestamp,
       orderDirection: OrderDirection.Desc,
     },
+    pollInterval: 3000,
   });
 
-  // Subscribe to real-time updates
-  const { data: subscriptionData } = useSubscription(GET_BETS_SUBSCRIPTION, {
-    variables: {
-      filter,
-    },
-  });
-
-  // Update activities when query data changes
+  // Update poolBets when query data changes
   useEffect(() => {
     if (queryData?.bets) {
-      setActivities(queryData.bets);
+      setPoolBets(queryData.bets);
     }
   }, [queryData]);
 
-  // Update activities when subscription data changes
+  // Set up subscription for real-time updates
   useEffect(() => {
-    if (subscriptionData?.bets && subscriptionData.bets.length > 0) {
-      // Add new bet to the beginning and maintain maxEntries limit
-      setActivities((prevActivities) => {
-        const newBet = subscriptionData.bets[0];
+    // Subscribe to new bets
+    const unsubscribe = subscribeToMore({
+      document: GET_BETS,
+      variables: {
+        filter,
+        orderBy: Bet_OrderBy.BlockTimestamp,
+        orderDirection: OrderDirection.Desc,
+      },
+      updateQuery: (prev, { subscriptionData }) => {
+        console.log("subscriptionData", subscriptionData);
+        if (!subscriptionData.data) return prev;
 
-        // Check if this bet is already in our list to avoid duplicates
-        if (prevActivities.some((bet) => bet.id === newBet.id)) {
-          return prevActivities;
-        }
+        // Extract the new bet from the subscription data
+        // The structure depends on your subscription response
+        const newBet = subscriptionData.data.bets?.[0];
 
-        // Add new bet to the beginning and limit to maxEntries
-        return [newBet, ...prevActivities].slice(0, maxEntries);
-      });
-    }
-  }, [subscriptionData, maxEntries]);
+        if (!newBet) return prev;
+
+        // Check if the bet already exists in our list to avoid duplicates
+        const betExists = prev.bets.some((bet) => bet.id === newBet.id);
+        if (betExists) return prev;
+
+        // Add the new bet at the beginning of the array (most recent first)
+        return {
+          ...prev,
+          bets: [newBet, ...prev.bets],
+        };
+      },
+    });
+
+    // Clean up subscription when component unmounts
+    return () => unsubscribe();
+  }, [subscribeToMore, filter]);
 
   // Determine loading state
-  const isLoading = queryLoading && activities.length === 0;
+  const isLoading = queryLoading && poolBets.length === 0;
 
   // TODO get count of all bets for the pool and then hide the show more button at the end
   return (
@@ -140,12 +103,12 @@ export const Activity: FC<{
           {isLoading && (
             <div className="text-center py-4">Loading activities...</div>
           )}
-          {!isLoading && activities.length === 0 && (
+          {!isLoading && poolBets.length === 0 && (
             <div className="text-center py-4">No bets found</div>
           )}
-          {activities.map((activity, index) => (
+          {poolBets.map((activity, index) => (
             <ActivityLine
-              key={`${activity.user}-${activity.blockTimestamp}-${index}`}
+              key={`${activity.id}-${index}`}
               bet={activity}
               showQuestion={showQuestion}
               showPoolImage={showPoolImage}

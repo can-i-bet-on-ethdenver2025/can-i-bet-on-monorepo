@@ -4,6 +4,17 @@ import { MockedProvider } from "@apollo/client/testing";
 import type { Meta, StoryObj } from "@storybook/react";
 import { CurrentSpreadCard } from "./CurrentSpreadCard";
 
+const mockPool = {
+  id: "0x01",
+  poolIntId: "0x01",
+  question: "What is the capital of France?",
+  options: ["Paris", "London"],
+  totalBets: "3000000",
+  totalBetsByOption: ["1000000", "2000000"],
+  selectedOption: "Paris",
+  status: PoolStatus.Pending,
+} as Pool;
+
 const mocks = [
   {
     request: {
@@ -12,16 +23,7 @@ const mocks = [
     },
     result: {
       data: {
-        pool: {
-          id: "0x01",
-          poolIntId: "0x01",
-          question: "What is the capital of France?",
-          options: ["Paris", "London"],
-          totalBets: "3000000",
-          totalBetsByOption: ["1000000", "2000000"],
-          selectedOption: "Paris",
-          status: PoolStatus.Pending,
-        } as Pool,
+        pool: mockPool,
       },
     },
   },
@@ -64,21 +66,21 @@ type Story = StoryObj<typeof CurrentSpreadCard>;
 
 export const Default: Story = {
   args: {
-    poolId: "0x01",
+    pool: mockPool,
     showTitle: false,
   },
 };
 
 export const WithTitle: Story = {
   args: {
-    poolId: "0x01",
+    pool: mockPool,
     showTitle: true,
   },
 };
 
 export const WithoutTotalBets: Story = {
   args: {
-    poolId: "0x01",
+    pool: mockPool,
     showTitle: true,
     showTotalBets: false,
   },
@@ -86,14 +88,22 @@ export const WithoutTotalBets: Story = {
 
 export const CustomClassName: Story = {
   args: {
-    poolId: "0x01",
+    pool: mockPool,
     showTitle: true,
     cardClassName: "w-full max-w-sm mx-auto bg-slate-800 border-slate-700",
   },
 };
 
+export const WithPoolId: Story = {
+  args: {
+    poolId: "0x01",
+    showTitle: true,
+  },
+};
+
 export const Loading: Story = {
   args: {
-    poolId: "2", // Different poolId to trigger loading state
+    poolId: "0x02", // Different poolId to trigger loading state
+    loading: true,
   },
 };

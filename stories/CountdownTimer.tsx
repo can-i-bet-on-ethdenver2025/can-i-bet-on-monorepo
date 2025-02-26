@@ -1,6 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
+import { Clock } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export interface CountdownTimerProps {
@@ -9,6 +10,7 @@ export interface CountdownTimerProps {
   poolStatus?: "PENDING" | "GRADED";
   winningOption?: string;
   winningOptionIndex?: string;
+  compact?: boolean;
 }
 
 export const CountdownTimer = ({
@@ -17,6 +19,7 @@ export const CountdownTimer = ({
   poolStatus = "PENDING",
   winningOption = "",
   winningOptionIndex = "",
+  compact = false,
 }: CountdownTimerProps) => {
   const [timeLeft, setTimeLeft] = useState<string>("");
   const [timeDigits, setTimeDigits] = useState<string[]>([]);
@@ -56,6 +59,14 @@ export const CountdownTimer = ({
 
   // If the pool is graded, show the winning option
   if (poolStatus === "GRADED") {
+    if (compact) {
+      return (
+        <div className={`flex items-center text-green-500 ${className}`}>
+          <span className="text-sm font-medium">Bets closed</span>
+        </div>
+      );
+    }
+
     return (
       <div className={`flex flex-col items-center text-green-500 ${className}`}>
         <motion.div
@@ -79,6 +90,14 @@ export const CountdownTimer = ({
 
   // If the pool is not pending OR there is no time left, show grading in progress
   if (poolStatus !== "PENDING" || timeLeft === "Betting closed") {
+    if (compact) {
+      return (
+        <div className={`flex items-center text-amber-500 ${className}`}>
+          <span className="text-sm font-medium">Bets closed</span>
+        </div>
+      );
+    }
+
     return (
       <div className={`flex flex-col items-center text-amber-500 ${className}`}>
         <motion.div
@@ -100,6 +119,31 @@ export const CountdownTimer = ({
         >
           Grading in progress...
         </motion.div>
+      </div>
+    );
+  }
+
+  // Compact variant: just show the time with a clock icon
+  if (compact) {
+    return (
+      <div className={`flex items-center gap-1 ${className}`}>
+        <Clock className="h-3.5 w-3.5 text-amber-500" />
+        <div className="text-sm font-medium flex">
+          <AnimatePresence mode="popLayout">
+            {timeDigits.map((digit, index) => (
+              <motion.span
+                key={`${index}-${digit}`}
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -5 }}
+                transition={{ duration: 0.15 }}
+                className={digit === ":" ? "mx-0.5" : "tabular-nums"}
+              >
+                {digit}
+              </motion.span>
+            ))}
+          </AnimatePresence>
+        </div>
       </div>
     );
   }

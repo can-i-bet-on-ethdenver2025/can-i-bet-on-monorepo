@@ -1,9 +1,9 @@
-import { GET_BETS } from "@/app/queries";
+import { GET_BETS, GET_BETS_SUBSCRIPTION } from "@/app/queries";
 import { Bet, PoolStatus } from "@/lib/__generated__/graphql";
 import { MockedProvider } from "@apollo/client/testing";
 import { faker } from "@faker-js/faker";
 import type { Meta, StoryObj } from "@storybook/react";
-import { Activity, GET_BETS_SUBSCRIPTION } from "./Activity";
+import { Activity } from "./Activity";
 
 // Create a mock bet generator function
 const createMockBet = (index: number): Bet => {
