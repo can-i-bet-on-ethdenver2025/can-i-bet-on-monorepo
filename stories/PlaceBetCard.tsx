@@ -5,7 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useUsdcBalance } from "@/components/useUsdcBalance";
 import { GetPoolQuery } from "@/lib/__generated__/graphql";
 import { optionColorClasses } from "@/lib/config";
-import { USDC_DECIMALS } from "@/lib/utils";
+import { USDC_DECIMALS, usdcAmountToDollarsNumber } from "@/lib/utils";
 import { BetButton } from "@/stories/BetButton";
 import { ApolloError } from "@apollo/client";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -161,7 +161,9 @@ export const PlaceBetCard = ({ pool, loading }: PlaceBetCardProps) => {
                 {isLoadingBalance
                   ? "Loading balance..."
                   : `Balance: $${
-                      usdcBalance ? Math.floor(parseFloat(usdcBalance)) : 0
+                      usdcBalance
+                        ? usdcAmountToDollarsNumber(parseFloat(usdcBalance))
+                        : 0
                     }`}
               </span>
             </div>
