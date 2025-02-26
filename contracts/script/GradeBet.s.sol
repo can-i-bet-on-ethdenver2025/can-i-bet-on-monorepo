@@ -7,7 +7,7 @@ import "../src/BettingPools.sol";
 contract GradeBetScript is Script {
     function run() external {
         // Input the poolId to send the grading request for
-        uint256 poolId = 7;
+        uint256 poolId = 18;
 
         // Get deployer's private key from environment
         uint256 deployerKey = vm.envUint("MAIN_PRIVATE_KEY");

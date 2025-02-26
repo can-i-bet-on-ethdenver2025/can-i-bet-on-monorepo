@@ -16,7 +16,7 @@ contract SetFunctionsScript is Script {
         BettingPools bettingPools = BettingPools(vm.envAddress("BETTING_POOLS_ADDRESS"));
 
         // Set the request script
-        bettingPools.setFunctionsRequestScript("return Functions.encodeUint256(1);");
+        bettingPools.setFunctionsRequestScript("const poolId = Number.parseInt(bytesArgs[0]); const response = await Functions.makeHttpRequest({ url: `https://promptbet.vercel.app/api/chainlink-functions/get-decision`, method: 'POST', headers: { 'api-key': secrets.apiKey }, data: { poolId } }); return Functions.encodeUint256(response.data.decision);");
 
         vm.stopBroadcast();
     }
