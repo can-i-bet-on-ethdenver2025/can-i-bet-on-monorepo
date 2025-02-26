@@ -267,7 +267,7 @@ export default function PoolsPage() {
                 pools.pools.map((pool) => (
                   <div
                     key={pool.id}
-                    className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-800"
+                    className="bg-gray-900 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-800"
                   >
                     <div className="flex gap-4">
                       <div>
@@ -314,7 +314,7 @@ export default function PoolsPage() {
                   </div>
                 ))
               ) : (
-                <div className="bg-white dark:bg-gray-900 rounded-xl p-8 shadow-sm border border-gray-100 dark:border-gray-800 text-center">
+                <div className="bg-dark:bg-gray-900 rounded-xl p-8 shadow-sm border border-gray-100 dark:border-gray-800 text-center">
                   <p className="text-xl text-gray-500">No pools found</p>
                   <p className="text-gray-400 mt-2">
                     Try a different filter or search term
@@ -342,7 +342,7 @@ export default function PoolsPage() {
               </div>
 
               {/* Highest Volume Pools */}
-              <div className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-800">
+              <div className="bg-gray-900 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-800">
                 <div className="flex items-center mb-4">
                   <TrendingUp className="w-5 h-5 text-green-500 mr-2" />
                   <h3 className="font-bold text-lg">Highest Volume</h3>
@@ -415,7 +415,7 @@ export default function PoolsPage() {
               </div>
 
               {/* Ending Soon Pools */}
-              <div className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-800">
+              <div className="bg-gray-900 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-800">
                 <div className="flex items-center mb-4">
                   <Clock className="w-5 h-5 text-amber-500 mr-2" />
                   <h3 className="font-bold text-lg">Ending Soon</h3>
@@ -494,7 +494,7 @@ export default function PoolsPage() {
             pools.pools.map((pool) => (
               <div
                 key={pool.id}
-                className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-800"
+                className="bg-gray-900 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-800"
               >
                 <div className="flex gap-4">
                   <div>
@@ -536,7 +536,7 @@ export default function PoolsPage() {
               </div>
             ))
           ) : (
-            <div className="bg-white dark:bg-gray-900 rounded-xl p-8 shadow-sm border border-gray-100 dark:border-gray-800 text-center">
+            <div className="bg-gray-900 rounded-xl p-8 shadow-sm border border-gray-100 dark:border-gray-800 text-center">
               <p className="text-xl text-gray-500">No pools found</p>
               <p className="text-gray-400 mt-2">
                 Try a different filter or search term
