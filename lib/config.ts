@@ -14,6 +14,9 @@ type ChainConfig = {
   iconUrl: string;
   backgroundColor: string;
   usdcAddress: `0x${string}`;
+  nativeCurrency: {
+    symbol: string;
+  };
 };
 
 // chainId -> per-chain config
@@ -25,6 +28,9 @@ export const CHAIN_CONFIG: Record<string, ChainConfig> = {
     iconUrl: baseIcon,
     backgroundColor: "#0052FF",
     usdcAddress: "0x3224f86e3e6dfC22aC1d04Ad4037e9b1983D7ba2",
+    nativeCurrency: {
+      symbol: "ETH",
+    },
   },
   [base.id]: {
     chain: base,
@@ -32,6 +38,9 @@ export const CHAIN_CONFIG: Record<string, ChainConfig> = {
     iconUrl: baseIcon,
     backgroundColor: "#0052FF",
     usdcAddress: "0x0000000000000000000000000000000000000000",
+    nativeCurrency: {
+      symbol: "ETH",
+    },
   },
   [arbitrum.id]: {
     chain: arbitrum,
@@ -39,6 +48,9 @@ export const CHAIN_CONFIG: Record<string, ChainConfig> = {
     iconUrl: arbitrumIcon,
     backgroundColor: "#FFFFFF",
     usdcAddress: "0x0000000000000000000000000000000000000000",
+    nativeCurrency: {
+      symbol: "ETH",
+    },
   },
   [arbitrumSepolia.id]: {
     chain: arbitrumSepolia,
@@ -46,6 +58,9 @@ export const CHAIN_CONFIG: Record<string, ChainConfig> = {
     iconUrl: arbitrumIcon,
     backgroundColor: "#FFFFFF",
     usdcAddress: "0x0000000000000000000000000000000000000000",
+    nativeCurrency: {
+      symbol: "ETH",
+    },
   },
 };
 

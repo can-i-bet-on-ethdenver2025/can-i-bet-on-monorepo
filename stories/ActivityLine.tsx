@@ -109,7 +109,7 @@ const ActivityLineComponent: FC<ActivityLineProps> = ({
 
           <div className="hidden sm:block flex-shrink-0 text-sm text-gray-500 self-center">
             {formatDistanceToNow(timestamp, {
-              addSuffix: true,
+              addSuffix: false,
             })
               .replace("about ", "")
               .replace("minutes", "min.")}

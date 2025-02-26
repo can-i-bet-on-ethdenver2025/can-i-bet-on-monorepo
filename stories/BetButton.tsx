@@ -123,14 +123,28 @@ export const BetButton = ({
       disabled={isLoading}
       type="button"
       onClick={handleClick}
+      aria-busy={isLoading}
+      aria-label={`Place bet on ${option}`}
       style={{
         WebkitAppearance: "none",
         MozAppearance: "textfield",
       }}
     >
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/10 rounded-xl">
+          <div
+            className={`w-5 h-5 border-2 ${colorClassnames.border} border-t-transparent rounded-full animate-spin`}
+          ></div>
+        </div>
+      )}
       <span className={`text-center line-clamp-2 ${colorClassnames.text}`}>
-        {isLoading ? "Processing bet..." : option}
+        {option}
       </span>
+      {!isLoading && amount && (
+        <span className={`text-sm ${colorClassnames.text}/70`}>
+          {amount} {chainConfig?.nativeCurrency?.symbol || ""}
+        </span>
+      )}
     </button>
   );
 };

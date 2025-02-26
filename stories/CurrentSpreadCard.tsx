@@ -10,6 +10,9 @@ import { RatioBar } from "./RatioBar";
 
 interface CurrentSpreadCardProps {
   poolId: string;
+  showTitle?: boolean;
+  cardClassName?: string;
+  showTotalBets?: boolean;
 }
 
 const LoadingSkeleton = () => (
@@ -27,7 +30,12 @@ const LoadingSkeleton = () => (
   </Card>
 );
 
-export const CurrentSpreadCard: FC<CurrentSpreadCardProps> = ({ poolId }) => {
+export const CurrentSpreadCard: FC<CurrentSpreadCardProps> = ({
+  poolId,
+  showTitle = true,
+  cardClassName = "w-full max-w-md mx-auto",
+  showTotalBets = true,
+}) => {
   const { data, loading, error } = useQuery(GET_POOL, {
     variables: { poolId: poolId },
     fetchPolicy: "no-cache",
@@ -39,7 +47,7 @@ export const CurrentSpreadCard: FC<CurrentSpreadCardProps> = ({ poolId }) => {
   if (loading) return <LoadingSkeleton />;
   if (error) {
     return (
-      <Card className="w-full max-w-md mx-auto">
+      <Card className={cardClassName}>
         <CardContent className="py-4">
           <div className="text-red-500">
             Error loading spread data. Please try again later.
@@ -66,11 +74,13 @@ export const CurrentSpreadCard: FC<CurrentSpreadCardProps> = ({ poolId }) => {
   console.log("Ratio items:", ratioItems);
 
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader>
-        <CardTitle className={"text-center"}>Current Spread</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <Card className={cardClassName}>
+      {showTitle && (
+        <CardHeader>
+          <CardTitle className={"text-center"}>Current Spread</CardTitle>
+        </CardHeader>
+      )}
+      <CardContent className="pt-8 space-y-4">
         <div className="flex flex-col items-center">
           <RatioBar items={ratioItems} className="mb-2" />
         </div>
@@ -89,14 +99,18 @@ export const CurrentSpreadCard: FC<CurrentSpreadCardProps> = ({ poolId }) => {
             </div>
           ))}
 
-          <Separator className="my-2 bg-gray-700 h-px" />
+          {showTotalBets && (
+            <>
+              <Separator className="my-2 bg-gray-700 h-px" />
 
-          <div className="flex mt-2">
-            <div className="text-lg text-white font-bold">Total bets</div>
-            <div className="text-lg text-white font-semibold ml-auto">
-              {usdcAmountToDollars(data?.pool?.totalBets || 0)}
-            </div>
-          </div>
+              <div className="flex mt-2">
+                <div className="text-lg text-white font-bold">Total bets</div>
+                <div className="text-lg text-white font-semibold ml-auto">
+                  {usdcAmountToDollars(data?.pool?.totalBets || 0)}
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </CardContent>
     </Card>

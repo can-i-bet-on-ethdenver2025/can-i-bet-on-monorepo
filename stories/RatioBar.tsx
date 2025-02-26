@@ -24,7 +24,7 @@ interface RatioBarProps {
 
 export const RatioBar: FC<RatioBarProps> = ({
   items,
-  noContentLabel = "?",
+  noContentLabel = "No bets",
   className = "",
 }) => {
   const total = items.reduce((sum, item) => sum + item.amount, 0);

@@ -1,10 +1,12 @@
 "use client";
 import PrivyProviderWrapper from "@/components/PrivyProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { BottomNav } from "@/stories/BottomNav";
 import { Navbar } from "@/stories/Navbar";
 import { ApolloClient, ApolloProvider, InMemoryCache } from "@apollo/client";
 import { loadDevMessages, loadErrorMessages } from "@apollo/client/dev";
 import { Geist, Geist_Mono } from "next/font/google";
+import { usePathname } from "next/navigation";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -34,10 +36,12 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const pathname = usePathname();
+
   return (
-    <html lang="en">
+    <html lang="en" className="h-full">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased h-full`}
       >
         <ThemeProvider
           attribute="class"
@@ -47,8 +51,14 @@ export default function RootLayout({
         >
           <PrivyProviderWrapper>
             <ApolloProvider client={client}>
-              <Navbar />
-              {children}
+              <div className="flex flex-col min-h-screen relative">
+                <Navbar />
+                <div className="flex-1 relative">{children}</div>
+                <div className="h-16 md:hidden">
+                  {/* Spacer for bottom nav on mobile */}
+                </div>
+                <BottomNav currentPath={pathname} />
+              </div>
             </ApolloProvider>
           </PrivyProviderWrapper>
         </ThemeProvider>

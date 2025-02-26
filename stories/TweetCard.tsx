@@ -9,14 +9,6 @@ import { CreatorInfo } from "./CreatorInfo";
 import { CurrentSpreadCard } from "./CurrentSpreadCard";
 import Tweet from "./Tweet";
 
-// Sample tweet IDs to randomly select from
-const SAMPLE_TWEET_IDS = [
-  "1893049568805486621",
-  "1894085659263951232",
-  "1894094861931778280",
-  "1826015426658415033",
-] as const;
-
 interface TweetCardProps {
   poolId: string;
   className?: string;
