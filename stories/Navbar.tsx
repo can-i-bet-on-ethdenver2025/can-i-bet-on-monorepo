@@ -6,7 +6,7 @@ import {
 import MockUSDCAbi from "@/contracts/out/MockUSDC.sol/MockUSDC.json";
 import { CHAIN_CONFIG } from "@/lib/config";
 import { parseChainId, USDC_DECIMALS } from "@/lib/utils";
-import PromptbetLogo from "@/stories/assets/promptbet-logo2.jpg";
+import PromptbetLogo from "@/stories/assets/CanIBetOn Logo.jpg";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { ethers } from "ethers";
 import { Menu, X } from "lucide-react";
@@ -99,7 +99,7 @@ export const Navbar = () => {
             width={32}
             height={32}
           />
-          <span className="font-bold text-lg tracking-wide">PROMPTBET</span>
+          <span className="font-bold text-lg tracking-wide">@CanIBetOn</span>
         </Link>
 
         {/* Desktop Navigation */}

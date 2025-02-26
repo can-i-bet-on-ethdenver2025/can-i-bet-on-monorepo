@@ -12,7 +12,7 @@ import { CountdownTimer } from "@/stories/CountdownTimer";
 import { CurrentSpreadCard } from "@/stories/CurrentSpreadCard";
 import IconsWithNumbers from "@/stories/IconsWithNumbers";
 import { RatioBar } from "@/stories/RatioBar";
-import PromptbetLogo from "@/stories/assets/promptbet-logo2.jpg";
+import PromptbetLogo from "@/stories/assets/CanIBetOn Logo.jpg";
 import { useQuery } from "@apollo/client";
 import { formatDistanceToNow } from "date-fns";
 import { Clock, Search, TrendingUp } from "lucide-react";
@@ -231,13 +231,13 @@ export default function PoolsPage() {
               >
                 <Image
                   src={PromptbetLogo}
-                  alt="PromptBet Logo"
+                  alt="@CanIBetOn Logo"
                   width={40}
                   height={40}
                   className="rounded-full"
                 />
                 <span className="font-bold text-lg tracking-wide">
-                  PROMPTBET
+                  @CanIBetOn
                 </span>
               </Link>
 

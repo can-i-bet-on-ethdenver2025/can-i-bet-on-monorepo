@@ -36,8 +36,8 @@ type Story = StoryObj<typeof HomePage>;
 
 export const Default: Story = {
   args: {
-    title: "PromptBet",
-    subtitle: "Turn any idea into a betting pool",
+    title: "@CanIBetOn",
+    subtitle: "Bet on anything.",
     ctaText: "Create Pool",
   },
 };

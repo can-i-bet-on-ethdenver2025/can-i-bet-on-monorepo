@@ -19,8 +19,8 @@ interface HomePageProps {
 
 //TODO move pool listing that we have in this page to a component so we can reuse it on the pool browser.
 export const HomePage: FC<HomePageProps> = ({
-  title = "PromptBet",
-  subtitle = "Turn any idea into a betting pool",
+  title = "@CanIBetOn",
+  subtitle = "Bet on anything.",
   ctaText = "Create Pool",
   onCtaClick = () => {},
   onSearch = () => {},
