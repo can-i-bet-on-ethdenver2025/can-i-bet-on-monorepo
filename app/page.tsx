@@ -2,12 +2,18 @@
 
 import { GET_POOLS } from "@/app/queries";
 import { Input } from "@/components/ui/input";
-import { OrderDirection, Pool_OrderBy } from "@/lib/__generated__/graphql";
-import BetCard from "@/stories/BetCard";
+import {
+  GetPoolsQueryVariables,
+  OrderDirection,
+  Pool_OrderBy,
+  PoolStatus,
+} from "@/lib/__generated__/graphql";
 import { BottomNav } from "@/stories/BottomNav";
 import { FilterButton } from "@/stories/FilterButton";
+import Tweet from "@/stories/Tweet";
 import { useQuery } from "@apollo/client";
 import { Search } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 
 const FILTERS = [
@@ -27,21 +33,28 @@ const FILTERS = [
 export default function PoolsPage() {
   const [activeFilter, setActiveFilter] = useState("newest");
   const [searchQuery, setSearchQuery] = useState("");
+  const filter: GetPoolsQueryVariables["filter"] = {};
+
+  // Do not show pools where bets are closed unless the user is searching for it
+  if (searchQuery.length === 0) {
+    filter.status = PoolStatus.Pending;
+  } else {
+    filter.question_contains = searchQuery;
+  }
 
   //TODO Implement search and filter
   const { data: pools, loading: poolsLoading } = useQuery(GET_POOLS, {
     variables: {
-      filter: {},
+      filter,
       orderBy: Pool_OrderBy.CreatedBlockTimestamp,
       orderDirection: OrderDirection.Desc,
     },
   });
 
   if (poolsLoading) {
+    //TODO make me a skeleton
     return <div>Loading...</div>;
   }
-
-  console.log("pools", pools);
 
   return (
     <main className="min-h-screen pb-16 md:pb-0">
@@ -75,11 +88,18 @@ export default function PoolsPage() {
         </div>
 
         {/* Bet Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 justify-items-center">
-          {pools?.pools.map((pool) => (
-            <BetCard key={pool.id} pool={pool} />
-          ))}
-        </div>
+        {!poolsLoading && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 justify-items-center p-2">
+            {pools?.pools.map((pool) => (
+              <div key={pool.id} className={"w-full"}>
+                <hr className="relative -mx-[100vw] md:mx-0 my-4" />
+                <Link href={`/pools/${pool.id}`}>
+                  <Tweet id={pool.xPostId} />
+                </Link>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <BottomNav currentPath="/pools" />

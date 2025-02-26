@@ -1,68 +1,17 @@
+import { GET_BETS } from "@/app/queries";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Bet } from "@/lib/__generated__/graphql";
+import {
+  Bet_OrderBy,
+  GetBetsQuery,
+  OrderDirection,
+} from "@/lib/__generated__/graphql";
 import { gql, useQuery, useSubscription } from "@apollo/client";
 import { FC, useEffect, useState } from "react";
 import { ActivityLine } from "./ActivityLine";
 
 // Query to fetch initial data
 //TODO Try using fragments again, repeating common fields takes up space unnecessarily
-export const GET_BETS_QUERY = gql`
-  query GetBets($first: Int!, $filter: Bet_filter) {
-    bets(
-      first: $first
-      orderBy: blockTimestamp
-      orderDirection: desc
-      where: $filter
-    ) {
-      id
-      betIntId
-      optionIndex
-      amount
-      user
-      poolIntId
-      blockNumber
-      blockTimestamp
-      transactionHash
-      chainId
-      chainName
-      createdAt
-      updatedAt
-      poolIdHex
-      pool {
-        id
-        poolIntId
-        question
-        options
-        totalBets
-        totalBetsByOption
-        selectedOption
-        status
-        decisionDate
-        betsCloseAt
-        creatorId
-        creatorName
-        imageUrl
-        chainId
-        chainName
-        isDraw
-        xPostId
-        category
-        closureCriteria
-        closureInstructions
-        createdBlockNumber
-        createdBlockTimestamp
-        createdTransactionHash
-        gradedBlockNumber
-        gradedBlockTimestamp
-        gradedTransactionHash
-        lastUpdatedBlockNumber
-        lastUpdatedBlockTimestamp
-        lastUpdatedTransactionHash
-      }
-    }
-  }
-`;
 
 // Subscription for real-time updates
 export const GET_BETS_SUBSCRIPTION = gql`
@@ -129,17 +78,19 @@ export const Activity: FC<{
   showPoolImage = true,
 }) => {
   // State to store combined data from query and subscription
-  const [activities, setActivities] = useState<Bet[]>([]);
+  const [activities, setActivities] = useState<GetBetsQuery["bets"]>([]);
   const [showAdditionalBets, setShowAdditionalBets] = useState(0);
 
   // Create filter based on poolId if provided
   const filter = poolId ? { pool: poolId } : {};
 
   // Query for initial data
-  const { data: queryData, loading: queryLoading } = useQuery(GET_BETS_QUERY, {
+  const { data: queryData, loading: queryLoading } = useQuery(GET_BETS, {
     variables: {
       first: maxEntries + showAdditionalBets,
       filter,
+      orderBy: Bet_OrderBy.BlockTimestamp,
+      orderDirection: OrderDirection.Desc,
     },
   });
 

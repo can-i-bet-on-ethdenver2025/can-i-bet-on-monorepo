@@ -67,6 +67,7 @@ const createMockBet = (optionIndex: number, options: string[]): Bet => ({
     lastUpdatedBlockTimestamp: "1625097600",
     lastUpdatedTransactionHash: "0xabc123",
   },
+  payoutClaimed: false
 });
 
 // Create a story with a larger bet amount

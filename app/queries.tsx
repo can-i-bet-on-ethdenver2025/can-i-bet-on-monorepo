@@ -14,7 +14,7 @@ export const GET_POOLS = gql(`
       orderBy: $orderBy
       orderDirection: $orderDirection
     ) {
-      id
+            id
       poolIntId
       question
       options
@@ -50,11 +50,13 @@ export const GET_POOLS = gql(`
 // Used in BetList.tsx
 export const GET_BETS = gql(`
   query GetBets(
+    $first: Int = 10
     $filter: Bet_filter!
     $orderBy: Bet_orderBy!
     $orderDirection: OrderDirection!
   ) {
     bets(
+      first: $first
       where: $filter
       orderBy: $orderBy
       orderDirection: $orderDirection

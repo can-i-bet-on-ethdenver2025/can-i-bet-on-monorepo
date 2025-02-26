@@ -6,8 +6,8 @@ import { usdcAmountToDollars } from "@/lib/utils";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Jazzicon from "react-jazzicon";
-import { VolumeWithIcon } from "./IconsWithNumbers";
-import { RatioBar } from "./RatioBar";
+import { VolumeWithIcon } from "../stories/IconsWithNumbers";
+import { RatioBar } from "../stories/RatioBar";
 export interface BetCardProps {
   pool: GetPoolsQuery["pools"][0]; //typeof single elem from GET_POOL
 }

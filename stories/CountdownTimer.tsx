@@ -6,11 +6,17 @@ import { useEffect, useState } from "react";
 export interface CountdownTimerProps {
   betsCloseAt: number;
   className?: string;
+  poolStatus?: "PENDING" | "GRADED";
+  winningOption?: string;
+  winningOptionIndex?: string;
 }
 
 export const CountdownTimer = ({
   betsCloseAt,
   className = "",
+  poolStatus = "PENDING",
+  winningOption = "",
+  winningOptionIndex = "",
 }: CountdownTimerProps) => {
   const [timeLeft, setTimeLeft] = useState<string>("");
   const [timeDigits, setTimeDigits] = useState<string[]>([]);
@@ -48,20 +54,57 @@ export const CountdownTimer = ({
     return () => clearInterval(timer);
   }, [betsCloseAt]);
 
-  if (timeLeft === "Betting closed") {
+  // If the pool is graded, show the winning option
+  if (poolStatus === "GRADED") {
     return (
-      <div className={`flex flex-col items-center ${className}`}>
+      <div className={`flex flex-col items-center text-green-500 ${className}`}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-4xl font-bold"
+          className="text-2xl font-bold text-center"
         >
-          {timeLeft}
+          Bets closed
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="text-xl font-medium mt-2 text-center"
+        >
+          {winningOption} won
         </motion.div>
       </div>
     );
   }
 
+  // If the pool is not pending OR there is no time left, show grading in progress
+  if (poolStatus !== "PENDING" || timeLeft === "Betting closed") {
+    return (
+      <div className={`flex flex-col items-center text-amber-500 ${className}`}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-2xl font-bold text-center"
+        >
+          Bets closed on{" "}
+          {new Date(betsCloseAt * 1000).toLocaleString(undefined, {
+            dateStyle: "short",
+            timeStyle: "short",
+          })}
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="text-xl font-medium mt-2 text-center"
+        >
+          Grading in progress...
+        </motion.div>
+      </div>
+    );
+  }
+
+  // Default case: show countdown timer
   return (
     <div className={`flex flex-col items-center ${className}`}>
       <div className="flex flex-col items-center w-full">

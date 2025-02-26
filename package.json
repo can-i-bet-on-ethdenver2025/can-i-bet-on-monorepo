@@ -57,6 +57,10 @@
     "@eslint/eslintrc": "^3.2.0",
     "@faker-js/faker": "^9.5.0",
     "@graphql-codegen/cli": "5.0.5",
+    "@graphql-codegen/client-preset": "4.6.3",
+    "@graphql-codegen/introspection": "4.0.3",
+    "@graphql-codegen/typescript-operations": "^4.5.1",
+    "@graphql-codegen/typescript-react-apollo": "^4.3.2",
     "@storybook/addon-essentials": "^8.5.8",
     "@storybook/addon-interactions": "^8.5.8",
     "@storybook/addon-onboarding": "^8.5.8",
@@ -76,9 +80,7 @@
     "postcss": "^8.5.3",
     "storybook": "^8.5.8",
     "tailwindcss": "^3.4.17",
-    "typescript": "^5.7.3",
-    "@graphql-codegen/introspection": "4.0.3",
-    "@graphql-codegen/client-preset": "4.6.3"
+    "typescript": "^5.7.3"
   },
   "eslintConfig": {
     "extends": [

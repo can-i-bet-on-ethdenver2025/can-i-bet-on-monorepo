@@ -1,7 +1,6 @@
 "use client";
 
 import { GET_POOL } from "@/app/queries";
-import { shame } from "@/lib/utils";
 import { Activity } from "@/stories/Activity";
 import { CurrentSpreadCard } from "@/stories/CurrentSpreadCard";
 import { PlaceBetCard } from "@/stories/PlaceBetCard";
@@ -18,7 +17,7 @@ export default function PoolDetailsPage({ params }: { params: Params }) {
 
   const { data: pool, loading: poolLoading } = useQuery(GET_POOL, {
     variables: {
-      poolId: shame(id),
+      poolId: id,
     },
   });
 
@@ -31,7 +30,6 @@ export default function PoolDetailsPage({ params }: { params: Params }) {
   return (
     <div className="mx-auto py-8 flex flex-col gap-4">
       <TweetCard poolId={id} className="w-full max-w-md mx-auto" />
-
       <CurrentSpreadCard poolId={id} />
       <PlaceBetCard poolId={id} />
       <Activity

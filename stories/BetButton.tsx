@@ -3,8 +3,7 @@
 import { placeBet } from "@/lib/betting";
 import { CHAIN_CONFIG, MAX_OPTIONS, OptionColorClasses } from "@/lib/config";
 import { cn } from "@/lib/utils";
-import { ConnectedWallet, useWallets, usePrivy } from "@privy-io/react-auth";
-import { ethers } from "ethers";
+import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { useState } from "react";
 
 type BetButtonProps = {
@@ -118,6 +117,10 @@ export const BetButton = ({
       disabled={isDisabled || isError || isLoading}
       type="button"
       onClick={handleClick}
+      style={{
+        WebkitAppearance: "none",
+        MozAppearance: "textfield",
+      }}
     >
       <span className={`text-center line-clamp-2 ${colorClassnames.text}`}>
         {isLoading ? "Processing bet..." : option}

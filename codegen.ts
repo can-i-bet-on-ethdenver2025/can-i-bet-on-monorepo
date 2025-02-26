@@ -8,7 +8,7 @@ const config: CodegenConfig = {
     "app/**/*.ts(x)",
     "lib/**/*.ts(x)",
     "components/**/*.ts(x)",
-    "stories/**/*.tsx",
+    "stories/**/*.ts(x)",
   ],
   generates: {
     "lib/__generated__/": {

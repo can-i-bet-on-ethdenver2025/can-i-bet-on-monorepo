@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { Bet } from "@/lib/__generated__/graphql";
+import { GetBetsQuery } from "@/lib/__generated__/graphql";
 import { optionColor } from "@/lib/config";
 import { USDC_DECIMALS } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
@@ -9,7 +9,7 @@ import Jazzicon, { jsNumberForAddress } from "react-jazzicon";
 import { PlayerAddressChip } from "./PlayerAddressChip";
 
 export type ActivityLineProps = {
-  bet: Bet;
+  bet: GetBetsQuery["bets"][0];
   showQuestion?: boolean;
   showPoolImage?: boolean;
 };
@@ -99,12 +99,20 @@ const ActivityLineComponent: FC<ActivityLineProps> = ({
             </div>
 
             <div className="text-xs sm:hidden mt-2 text-gray-500">
-              {formatDistanceToNow(timestamp, { addSuffix: true })}
+              {formatDistanceToNow(timestamp, {
+                addSuffix: true,
+              })
+                .replace("about ", "")
+                .replace("minutes", "min.")}
             </div>
           </div>
 
           <div className="hidden sm:block flex-shrink-0 text-sm text-gray-500 self-center">
-            {formatDistanceToNow(timestamp, { addSuffix: true })}
+            {formatDistanceToNow(timestamp, {
+              addSuffix: true,
+            })
+              .replace("about ", "")
+              .replace("minutes", "min.")}
           </div>
         </div>
       </Card>

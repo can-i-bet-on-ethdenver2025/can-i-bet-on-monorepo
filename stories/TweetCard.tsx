@@ -2,10 +2,11 @@
 
 import { GET_POOL } from "@/app/queries";
 import { Card, CardContent } from "@/components/ui/card";
-import { PoolStatus } from "@/lib/__generated__/graphql";
+import { Separator } from "@/components/ui/separator";
 import { useQuery } from "@apollo/client";
 import { CountdownTimer } from "./CountdownTimer";
 import { CreatorInfo } from "./CreatorInfo";
+import { CurrentSpreadCard } from "./CurrentSpreadCard";
 import Tweet from "./Tweet";
 
 // Sample tweet IDs to randomly select from
@@ -19,9 +20,16 @@ const SAMPLE_TWEET_IDS = [
 interface TweetCardProps {
   poolId: string;
   className?: string;
+  showCountdown?: boolean;
+  showCurrentSpread?: boolean;
 }
 
-const TweetCard = ({ poolId, className = "" }: TweetCardProps) => {
+const TweetCard = ({
+  poolId,
+  className = "",
+  showCountdown = true,
+  showCurrentSpread = false,
+}: TweetCardProps) => {
   // Randomly select a tweet ID for now
   console.log("poolId", poolId);
 
@@ -49,7 +57,7 @@ const TweetCard = ({ poolId, className = "" }: TweetCardProps) => {
   return (
     <Card className={className}>
       <CardContent>
-        <div className="flex-col justify-between gap-4 mt-4">
+        <div className="flex-col justify-between gap-4 g mt-4">
           <div className={"flex flex-row gap-2 justify-center"}>
             <p>Pool started by:</p>
             <CreatorInfo
@@ -65,12 +73,12 @@ const TweetCard = ({ poolId, className = "" }: TweetCardProps) => {
           ) : (
             <Tweet id={data?.pool?.xPostId} />
           )}
-          {data?.pool?.status === PoolStatus.Pending &&
-          data?.pool?.betsCloseAt ? (
+          <Separator />
+
+          {showCountdown && (
             <CountdownTimer betsCloseAt={data?.pool?.betsCloseAt} />
-          ) : (
-            <div className="text-red-500 font-medium">Pool is closed</div>
           )}
+          {showCurrentSpread && <CurrentSpreadCard poolId={poolId} />}
         </div>
       </CardContent>
     </Card>

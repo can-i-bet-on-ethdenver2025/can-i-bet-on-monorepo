@@ -1,8 +1,9 @@
+import { GET_BETS } from "@/app/queries";
 import { Bet, PoolStatus } from "@/lib/__generated__/graphql";
 import { MockedProvider } from "@apollo/client/testing";
 import { faker } from "@faker-js/faker";
 import type { Meta, StoryObj } from "@storybook/react";
-import { Activity, GET_BETS_QUERY, GET_BETS_SUBSCRIPTION } from "./Activity";
+import { Activity, GET_BETS_SUBSCRIPTION } from "./Activity";
 
 // Create a mock bet generator function
 const createMockBet = (index: number): Bet => {
@@ -17,6 +18,7 @@ const createMockBet = (index: number): Bet => {
     betIntId: index.toString(),
     optionIndex,
     amount: amount.toString(),
+    payoutClaimed: false, // Added missing required field
     user: faker.finance.ethereumAddress(),
     poolIntId: Math.floor(Math.random() * 10).toString(),
     blockNumber: (10000000 + index).toString(),
@@ -100,7 +102,7 @@ const createMocks = (
   // Create query mock
   const queryMock = {
     request: {
-      query: GET_BETS_QUERY,
+      query: GET_BETS,
       variables: {
         first: maxEntries,
         filter,
@@ -187,7 +189,7 @@ export const NoResults: Story = {
       const emptyMocks = [
         {
           request: {
-            query: GET_BETS_QUERY,
+            query: GET_BETS,
             variables: {
               first: 10,
               filter: {},
