@@ -225,7 +225,7 @@ export default function PoolsPage() {
           <div className="md:col-span-2 lg:col-span-2">
             <div className="sticky top-20 space-y-6">
               {/* Logo and Website Name */}
-              <Link
+              {/* <Link
                 href="/"
                 className="flex items-center gap-3 mb-8 justify-center"
               >
@@ -239,7 +239,7 @@ export default function PoolsPage() {
                 <span className="font-bold text-lg tracking-wide">
                   @CanIBetOn
                 </span>
-              </Link>
+              </Link> */}
 
               {/* Filters */}
               <div className="space-y-2">
