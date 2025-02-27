@@ -123,53 +123,75 @@ export const BetButton = ({
     }
   };
 
-  const buttonStyles = {
-    // selected: `bg-${color} text-white border-${color} font-bold`,
-    disabled: `bg-gray-900/50 ${colorClassnames.border}/30 ${colorClassnames.text}/50`,
-  };
-
   return (
     <button
       className={cn(
-        `border-2 ${colorClassnames.border}`,
-        "w-42 h-32 px-4 font-medium fond-bold rounded-xl",
+        "min-w-42 min-h-32 px-4 font-medium fond-bold rounded-xl",
         "flex flex-col items-center justify-center font-bold",
+        "w-full h-full border-2 transition-colors duration-200",
+        colorClassnames.border,
         colorClassnames.text,
-        `hover:${colorClassnames.backgroundColor}/20`,
-        isLoading
-          ? `text-white hsl(var(--${optionColor[optionIndex]}-color))`
-          : ""
+        {
+          "text-white": isLoading,
+          "bg-gray-900/50": disabled,
+          [`${colorClassnames.border}/30`]: disabled,
+          [`${colorClassnames.text}/50`]: disabled,
+        }
       )}
       disabled={isLoading}
       type="button"
       onClick={handleClick}
       aria-busy={isLoading}
       aria-label={`Place bet on ${option}`}
-      style={{
-        WebkitAppearance: "none",
-        MozAppearance: "textfield",
+      style={
+        {
+          borderColor: `hsl(var(--${optionColor[optionIndex]}-color))`,
+          backgroundColor: isLoading
+            ? `hsl(var(--${optionColor[optionIndex]}-color))`
+            : "transparent",
+          color: isLoading ? "white" : undefined,
+          WebkitAppearance: "none",
+          MozAppearance: "textfield",
+          "--hover-color": `hsl(var(--${optionColor[optionIndex]}-color) / 0.2)`,
+        } as React.CSSProperties
+      }
+      // Use onMouseEnter and onMouseLeave for hover effects
+      onMouseEnter={(e) => {
+        if (!isLoading && !disabled) {
+          (
+            e.currentTarget as HTMLButtonElement
+          ).style.backgroundColor = `hsl(var(--${optionColor[optionIndex]}-color) / 0.2)`;
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!isLoading && !disabled) {
+          (e.currentTarget as HTMLButtonElement).style.backgroundColor = "";
+        }
       }}
     >
-      {/* {isLoading ? (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/10 rounded-xl">
-          <div
-            className={`w-5 h-5 border-2 ${colorClassnames.border} border-t-transparent rounded-full animate-spin`}
-          ></div>
-        </div>
-      ) : ( */}
-      <div className="flex flex-col">
-        <span
-          className={`
-              text-center line-clamp-2 mb-1`}
-        >
-          {option}
-        </span>
-        <span className={`text-[8px] text-gray-500`}>You could win</span>
-        <span className={`text-lg font-medium`}>
-          +{usdcAmountToDollars(potentialEarnings)}
-        </span>
+      <div className="flex flex-col items-center justify-center w-full h-full">
+        {isLoading ? (
+          <div className="flex items-center justify-center">
+            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            <span className="ml-2">Processing...</span>
+          </div>
+        ) : (
+          <>
+            <span
+              className={`
+                  text-center line-clamp-3 mb-1 w-full flex-grow flex items-center justify-center text-xl`}
+            >
+              {option}
+            </span>
+            <span className={`text-[8px] text-gray-500 w-full text-center`}>
+              You could win
+            </span>
+            <span className={`text-lg font-medium w-full text-center`}>
+              +{usdcAmountToDollars(potentialEarnings)}
+            </span>
+          </>
+        )}
       </div>
-      {/* )} */}
     </button>
   );
 };

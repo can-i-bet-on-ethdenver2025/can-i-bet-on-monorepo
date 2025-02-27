@@ -95,7 +95,12 @@ export const CurrentSpreadCard: FC<CurrentSpreadCardProps> = ({
         </CardHeader>
       )}
       <CardContent className="pt-2 space-y-3">
-        <div className="flex flex-col items-center">
+        <div
+          className="flex flex-col items-center"
+          style={{
+            marginTop: showTitle ? "0px" : "10px",
+          }}
+        >
           <RatioBar items={ratioItems} className="mb-1" />
         </div>
 

@@ -2,12 +2,12 @@
 
 import { GET_POOL } from "@/app/queries";
 import { Card, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { useQuery } from "@apollo/client";
-import { CountdownTimer } from "./CountdownTimer";
 import { CreatorInfo } from "./CreatorInfo";
 import { CurrentSpreadCard } from "./CurrentSpreadCard";
 import Tweet from "./Tweet";
+
+const TELEGRAM_TWEET_ID = "9999999999999999999999999999999999";
 
 interface TweetCardProps {
   poolId: string;
@@ -65,11 +65,7 @@ const TweetCard = ({
           ) : (
             <Tweet id={data?.pool?.xPostId} />
           )}
-          <Separator />
 
-          {showCountdown && (
-            <CountdownTimer betsCloseAt={data?.pool?.betsCloseAt} />
-          )}
           {showCurrentSpread && <CurrentSpreadCard poolId={poolId} />}
         </div>
       </CardContent>

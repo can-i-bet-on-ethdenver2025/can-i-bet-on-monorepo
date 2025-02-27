@@ -1,11 +1,14 @@
 "use client";
 
 import { GET_POOL } from "@/app/queries";
+import { Button } from "@/components/ui/button";
 import { Activity } from "@/stories/Activity";
 import { CurrentSpreadCard } from "@/stories/CurrentSpreadCard";
 import { PlaceBetCard } from "@/stories/PlaceBetCard";
 import TweetCard from "@/stories/TweetCard";
 import { useQuery } from "@apollo/client";
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
 import { use } from "react";
 
 // See BetList.tsx for the fragment, ass backwards
@@ -19,7 +22,7 @@ export default function PoolDetailsPage({ params }: { params: Params }) {
     variables: {
       poolId: id,
     },
-    pollInterval: 3000,
+    pollInterval: 5000,
   });
 
   if (poolLoading) {
@@ -29,18 +32,33 @@ export default function PoolDetailsPage({ params }: { params: Params }) {
   console.log("pool", pool);
 
   return (
-    <div className="mx-auto py-8 flex flex-col gap-4">
-      <TweetCard poolId={id} className="w-full max-w-md mx-auto" />
-      <CurrentSpreadCard pool={pool?.pool} loading={poolLoading} />
-      {pool?.pool?.status === "PENDING" && (
-        <PlaceBetCard pool={pool.pool} loading={poolLoading} />
-      )}
-      <Activity
-        poolId={id}
-        showQuestion={false}
-        showPoolImage={false}
-        maxEntries={5}
-      />
+    <div className="mx-auto flex flex-col">
+      <div className="mt-4 ml-4">
+        <Link href="/" className="w-fit">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="p-0 h-5 flex items-center gap-1 text-sm font-medium hover:bg-secondary leading-none"
+          >
+            <ArrowLeft size={16} className="relative -top-[1px]" />
+            <span className="relative -top-[1px]">Back</span>
+          </Button>
+        </Link>
+      </div>
+
+      <div className="py-4 flex flex-col gap-4">
+        {pool?.pool?.status === "PENDING" && (
+          <PlaceBetCard pool={pool.pool} loading={poolLoading} />
+        )}
+        <CurrentSpreadCard pool={pool?.pool} loading={poolLoading} />
+        <Activity
+          poolId={id}
+          showQuestion={false}
+          showPoolImage={false}
+          maxEntries={5}
+        />
+        <TweetCard poolId={id} className="w-full max-w-md mx-auto" />
+      </div>
     </div>
   );
 }

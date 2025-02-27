@@ -68,7 +68,7 @@ const ActivityLineComponent: FC<ActivityLineProps> = ({
     <div
       className={
         showSeparator
-          ? "border-b border-gray-100 dark:border-gray-800 pb-3 mb-3 last:border-0 last:mb-0 last:pb-0"
+          ? "border-b border-gray-800 pb-3 mb-3 last:border-0 last:mb-0 last:pb-0"
           : ""
       }
     >
@@ -101,7 +101,7 @@ const ActivityLineComponent: FC<ActivityLineProps> = ({
               !showQuestion ? "py-1" : ""
             }`}
           >
-            <div className="flex items-center gap-1 flex-shrink-0 after:content-['·'] after:mx-1 after:text-gray-300 dark:after:text-gray-600">
+            <div className="flex items-center gap-1 flex-shrink-0 after:content-['·'] after:mx-1 after:text-gray-600">
               <div className="sm:hidden flex items-center">
                 <Jazzicon
                   diameter={14}
@@ -127,7 +127,7 @@ const ActivityLineComponent: FC<ActivityLineProps> = ({
                 className="hidden sm:inline"
               />
             </div>
-            <div className="flex items-center after:content-['·'] after:mx-1 after:text-gray-300 dark:after:text-gray-600">
+            <div className="flex items-center after:content-['·'] after:mx-1 after:text-gray-600">
               <span className="text-xs sm:text-sm whitespace-nowrap flex-shrink-0 flex items-center">
                 <span className="sm:hidden">bet {compactBetAmount} on</span>
                 <span className="hidden sm:inline">
@@ -144,13 +144,13 @@ const ActivityLineComponent: FC<ActivityLineProps> = ({
               </span>
             </div>
 
-            <span className="text-xs ml-auto text-gray-500 sm:hidden whitespace-nowrap flex-shrink-0 flex items-center before:content-['·'] before:mr-1 before:text-gray-300 dark:before:text-gray-600">
+            <span className="text-xs ml-auto text-gray-500 sm:hidden whitespace-nowrap flex-shrink-0 flex items-center before:content-['·'] before:mr-1 before:text-gray-600">
               {formatCompactTime(timestamp)}
             </span>
           </div>
         </div>
 
-        <div className="hidden sm:block flex-shrink-0 text-sm text-gray-500 self-center before:content-['·'] before:mr-2 before:text-gray-300 dark:before:text-gray-600">
+        <div className="hidden sm:block flex-shrink-0 text-sm text-gray-500 self-center before:content-['·'] before:mr-2 before:text-gray-600">
           {formatDistanceToNow(timestamp, {
             addSuffix: false,
           })

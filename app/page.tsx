@@ -1,6 +1,7 @@
 "use client";
 
 import { GET_POOLS } from "@/app/queries";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   GetPoolsQueryVariables,
@@ -8,11 +9,11 @@ import {
   Pool_OrderBy,
   PoolStatus,
 } from "@/lib/__generated__/graphql";
+import PromptbetLogo from "@/stories/assets/CanIBetOn Logo.jpg";
 import { CountdownTimer } from "@/stories/CountdownTimer";
 import { CurrentSpreadCard } from "@/stories/CurrentSpreadCard";
 import IconsWithNumbers from "@/stories/IconsWithNumbers";
 import { RatioBar } from "@/stories/RatioBar";
-import PromptbetLogo from "@/stories/assets/CanIBetOn Logo.jpg";
 import { useQuery } from "@apollo/client";
 import { formatDistanceToNow } from "date-fns";
 import { Clock, Search, TrendingUp } from "lucide-react";
@@ -39,6 +40,7 @@ const FILTERS = [
 ];
 
 // Simple sparkline component to show volume trends
+//TODO Make this a real sparkline
 const VolumeSparkline: React.FC<{ className?: string }> = ({
   className = "",
 }) => {
@@ -174,9 +176,9 @@ export default function PoolsPage() {
       <main className="min-h-screen pb-24 md:pb-8">
         <div className="container mx-auto px-4 py-8">
           <div className="animate-pulse space-y-6">
-            <div className="h-32 bg-gray-200 dark:bg-gray-800 rounded-md"></div>
-            <div className="h-32 bg-gray-200 dark:bg-gray-800 rounded-md"></div>
-            <div className="h-32 bg-gray-200 dark:bg-gray-800 rounded-md"></div>
+            <div className="h-32 bg-background rounded-md"></div>
+            <div className="h-32 bg-background rounded-md"></div>
+            <div className="h-32 bg-background rounded-md"></div>
           </div>
         </div>
       </main>
@@ -209,7 +211,7 @@ export default function PoolsPage() {
                 className={`px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap ${
                   activeFilter === filter.id
                     ? "bg-primary text-black"
-                    : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300"
+                    : "bg-background"
                 }`}
                 onClick={() => setActiveFilter(filter.id)}
               >
@@ -225,22 +227,34 @@ export default function PoolsPage() {
           <div className="md:col-span-2 lg:col-span-2">
             <div className="sticky top-20 space-y-6">
               {/* Logo and Website Name */}
-              {/* <Link
-                href="/"
-                className="flex items-center gap-3 mb-8 justify-center"
-              >
-                <Image
-                  src={PromptbetLogo}
-                  alt="@CanIBetOn Logo"
-                  width={40}
-                  height={40}
-                  className="rounded-full"
-                />
-                <span className="font-bold text-lg tracking-wide">
-                  @CanIBetOn
-                </span>
-              </Link> */}
-
+              <div className="flex flex-col items-center space-y-3 mb-6">
+                <Link href="/" className="flex flex-col items-center gap-2">
+                  <Image
+                    src={PromptbetLogo}
+                    alt="@CanIBetOn Logo"
+                    width={60}
+                    height={60}
+                    className="rounded-full"
+                  />
+                  <span className="font-bold text-lg tracking-wide">
+                    @CanIBetOn
+                  </span>
+                </Link>
+                <Button
+                  className="w-full mt-2 border border-input bg-accent text-white shadow-sm hover:bg-background hover:text-accent-foreground"
+                  onClick={() =>
+                    window.open(
+                      "https://x.com/CanIBetOn",
+                      "_blank",
+                      "noopener,noreferrer"
+                    )
+                  }
+                >
+                  <PiXLogo className="w-5 h-5 mr-2" />
+                  <span>Follow @CanIBetOn</span>
+                </Button>
+              </div>
+              <hr />
               {/* Filters */}
               <div className="space-y-2">
                 {FILTERS.map((filter) => (
@@ -249,7 +263,7 @@ export default function PoolsPage() {
                     className={`w-full text-left px-4 py-2 rounded-lg text-sm font-medium ${
                       activeFilter === filter.id
                         ? "bg-primary text-black"
-                        : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                        : "hover:bg-gray-800"
                     }`}
                     onClick={() => setActiveFilter(filter.id)}
                   >
@@ -267,7 +281,7 @@ export default function PoolsPage() {
                 pools.pools.map((pool) => (
                   <div
                     key={pool.id}
-                    className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-800"
+                    className="bg-gray-900 rounded-xl p-4 shadow-sm border border-gray-800"
                   >
                     <div className="flex gap-4">
                       <div>
@@ -305,7 +319,7 @@ export default function PoolsPage() {
                           <CurrentSpreadCard
                             poolId={pool.id}
                             showTitle={false}
-                            showTotalBets={true}
+                            showTotalBets={false}
                             cardClassName="w-full bg-black border border-gray-600"
                           />
                         </Link>
@@ -314,7 +328,7 @@ export default function PoolsPage() {
                   </div>
                 ))
               ) : (
-                <div className="bg-white dark:bg-gray-900 rounded-xl p-8 shadow-sm border border-gray-100 dark:border-gray-800 text-center">
+                <div className="bg-gray-900 rounded-xl p-8 shadow-sm border border-gray-800 text-center">
                   <p className="text-xl text-gray-500">No pools found</p>
                   <p className="text-gray-400 mt-2">
                     Try a different filter or search term
@@ -342,7 +356,7 @@ export default function PoolsPage() {
               </div>
 
               {/* Highest Volume Pools */}
-              <div className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-800">
+              <div className="bg-gray-900 rounded-xl p-4 shadow-sm border border-gray-800">
                 <div className="flex items-center mb-4">
                   <TrendingUp className="w-5 h-5 text-green-500 mr-2" />
                   <h3 className="font-bold text-lg">Highest Volume</h3>
@@ -350,9 +364,9 @@ export default function PoolsPage() {
                 <div className="space-y-4">
                   {volumePoolsLoading ? (
                     <div className="animate-pulse space-y-4">
-                      <div className="h-16 bg-gray-200 dark:bg-gray-800 rounded-md"></div>
-                      <div className="h-16 bg-gray-200 dark:bg-gray-800 rounded-md"></div>
-                      <div className="h-16 bg-gray-200 dark:bg-gray-800 rounded-md"></div>
+                      <div className="h-16 bg-background rounded-md"></div>
+                      <div className="h-16 bg-background rounded-md"></div>
+                      <div className="h-16 bg-background rounded-md"></div>
                     </div>
                   ) : highestVolumePools?.pools &&
                     highestVolumePools.pools.length > 0 ? (
@@ -363,7 +377,7 @@ export default function PoolsPage() {
                       .slice(0, 3)
                       .map((pool) => (
                         <Link key={pool.id} href={`/pools/${pool.id}`}>
-                          <div className="flex flex-col hover:bg-gray-50 dark:hover:bg-gray-800 p-2 rounded-lg transition-colors">
+                          <div className="flex flex-col hover:bg-gray-800 p-2 rounded-lg transition-colors">
                             <p className="font-medium line-clamp-2 mb-2">
                               {pool.question}
                             </p>
@@ -415,7 +429,7 @@ export default function PoolsPage() {
               </div>
 
               {/* Ending Soon Pools */}
-              <div className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-800">
+              <div className="bg-gray-900 rounded-xl p-4 shadow-sm border border-gray-800">
                 <div className="flex items-center mb-4">
                   <Clock className="w-5 h-5 text-amber-500 mr-2" />
                   <h3 className="font-bold text-lg">Ending Soon</h3>
@@ -423,9 +437,9 @@ export default function PoolsPage() {
                 <div className="space-y-4">
                   {endingSoonPoolsLoading ? (
                     <div className="animate-pulse space-y-4">
-                      <div className="h-16 bg-gray-200 dark:bg-gray-800 rounded-md"></div>
-                      <div className="h-16 bg-gray-200 dark:bg-gray-800 rounded-md"></div>
-                      <div className="h-16 bg-gray-200 dark:bg-gray-800 rounded-md"></div>
+                      <div className="h-16 bg-background rounded-md"></div>
+                      <div className="h-16 bg-background rounded-md"></div>
+                      <div className="h-16 bg-background rounded-md"></div>
                     </div>
                   ) : endingSoonPools?.pools &&
                     endingSoonPools.pools.length > 0 ? (
@@ -439,7 +453,7 @@ export default function PoolsPage() {
                       .slice(0, 5)
                       .map((pool) => (
                         <Link key={pool.id} href={`/pools/${pool.id}`}>
-                          <div className="flex items-start space-x-3 hover:bg-gray-50 dark:hover:bg-gray-800 p-2 rounded-lg transition-colors">
+                          <div className="flex items-start space-x-3 hover:bg-gray-800 p-2 rounded-lg transition-colors">
                             {pool.imageUrl ? (
                               <img
                                 src={pool.imageUrl}
@@ -494,7 +508,7 @@ export default function PoolsPage() {
             pools.pools.map((pool) => (
               <div
                 key={pool.id}
-                className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-800"
+                className="bg-gray-900 rounded-xl p-4 shadow-sm border border-gray-800"
               >
                 <div className="flex gap-4">
                   <div>
@@ -536,7 +550,7 @@ export default function PoolsPage() {
               </div>
             ))
           ) : (
-            <div className="bg-white dark:bg-gray-900 rounded-xl p-8 shadow-sm border border-gray-100 dark:border-gray-800 text-center">
+            <div className="bg-gray-900 rounded-xl p-8 shadow-sm border border-gray-800 text-center">
               <p className="text-xl text-gray-500">No pools found</p>
               <p className="text-gray-400 mt-2">
                 Try a different filter or search term

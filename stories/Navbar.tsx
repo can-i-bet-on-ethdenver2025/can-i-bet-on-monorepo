@@ -3,6 +3,7 @@ import {
   PrivyLoginButton,
   PrivyLogoutButton,
 } from "@/components/PrivyLoginButton";
+import { Button } from "@/components/ui/button";
 import MockUSDCAbi from "@/contracts/out/MockUSDC.sol/MockUSDC.json";
 import { CHAIN_CONFIG } from "@/lib/config";
 import { parseChainId, USDC_DECIMALS } from "@/lib/utils";
@@ -13,6 +14,7 @@ import { Menu, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { PiXLogo } from "react-icons/pi";
 import { NetworkButton } from "./NetworkButton";
 
 export const Navbar = () => {
@@ -92,15 +94,17 @@ export const Navbar = () => {
   return (
     <nav className="border-b">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2">
-          <Image
-            src={PromptbetLogo}
-            alt="PromptBet Logo"
-            width={32}
-            height={32}
-          />
-          <span className="font-bold text-lg tracking-wide">@CanIBetOn</span>
-        </Link>
+        <div className="flex gap-2">
+          <Link href="/" className="flex items-center gap-2">
+            <Image
+              src={PromptbetLogo}
+              alt="PromptBet Logo"
+              width={32}
+              height={32}
+            />
+            <span className="font-bold text-lg tracking-wide">@CanIBetOn</span>
+          </Link>
+        </div>
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-4">
@@ -136,6 +140,19 @@ export const Navbar = () => {
       {isMenuOpen && (
         <div className="md:hidden border-t">
           <div className="container mx-auto px-4 py-2 flex flex-col gap-2">
+            <Button
+              className="w-full mt-2 border border-input bg-accent text-white shadow-sm hover:bg-background hover:text-accent-foreground"
+              onClick={() =>
+                window.open(
+                  "https://x.com/CanIBetOn",
+                  "_blank",
+                  "noopener,noreferrer"
+                )
+              }
+            >
+              <PiXLogo className="w-5 h-5 mr-2" />
+              <span>Follow @CanIBetOn</span>
+            </Button>
             {ready && authenticated && readyWallets && embeddedWallet && (
               <>
                 {!isLoadingBalance && (
