@@ -15,6 +15,9 @@ type GenerateSigningPropsRequest = {
 const PRIVATE_CHAIN_CONFIG: {
   [key: keyof typeof CHAIN_CONFIG]: { rpcUrl: string };
 } = {
+  "8453": {
+    rpcUrl: process.env.BASE_RPC_URL || "",
+  },
   // Using the same config as in sendSignedPlaceBet
   "84532": {
     rpcUrl: process.env.BASE_SEPOLIA_RPC_URL || "",

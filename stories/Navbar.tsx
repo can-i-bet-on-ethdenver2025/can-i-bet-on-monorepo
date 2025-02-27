@@ -6,7 +6,7 @@ import {
 import { Button } from "@/components/ui/button";
 import MockUSDCAbi from "@/contracts/out/MockUSDC.sol/MockUSDC.json";
 import { CHAIN_CONFIG } from "@/lib/config";
-import { parseChainId, USDC_DECIMALS } from "@/lib/utils";
+import { parseChainId, USDC_DECIMALS, useCurrentChainId } from "@/lib/utils";
 import PromptbetLogo from "@/stories/assets/CanIBetOn Logo.jpg";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { ethers } from "ethers";
@@ -16,6 +16,10 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { PiXLogo } from "react-icons/pi";
 import { NetworkButton } from "./NetworkButton";
+import { base, baseSepolia } from "viem/chains";
+import { Switch } from "@/components/ui/switch";
+
+export const defaultChainId = base.id;
 
 export const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -33,7 +37,7 @@ export const Navbar = () => {
   )!;
 
   // Get the chain ID from the first wallet if available
-  const currentChainId = parseChainId(84532);
+  const [currentChainId, setCurrentChainId] = useCurrentChainId();
 
   // Fetch USDC balance when wallet is connected
   useEffect(() => {
@@ -116,7 +120,31 @@ export const Navbar = () => {
                   <div>${usdcBalance}</div>
                 </div>
               )}
-              <NetworkButton chainId={currentChainId} size="small" />
+              {/* <NetworkButton chainId={currentChainId} size="small" /> */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm">
+                  {currentChainId === parseChainId(base.id)
+                    ? "Using $"
+                    : "Using Points"}
+                </span>
+                <Switch
+                  checked={currentChainId === parseChainId(base.id)}
+                  onCheckedChange={(value) => {
+                    console.log({
+                      value,
+                      currentChainId,
+                      baseId: String(base.id),
+                    });
+                    if (currentChainId === String(parseChainId(base.id))) {
+                      embeddedWallet.switchChain(baseSepolia.id);
+                      setCurrentChainId(parseChainId(baseSepolia.id));
+                    } else {
+                      embeddedWallet.switchChain(base.id);
+                      setCurrentChainId(parseChainId(base.id));
+                    }
+                  }}
+                />
+              </div>
             </>
           )}
           {ready && authenticated ? (
@@ -161,7 +189,7 @@ export const Navbar = () => {
                     <div>${usdcBalance}</div>
                   </div>
                 )}
-                <NetworkButton chainId={currentChainId} size="small" />
+                {/* <NetworkButton chainId={currentChainId} size="small" /> */}
               </>
             )}
             {ready && authenticated ? (

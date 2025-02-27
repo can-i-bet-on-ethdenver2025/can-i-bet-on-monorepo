@@ -1,4 +1,4 @@
-import { USDC_DECIMALS } from "@/lib/utils";
+import { USDC_DECIMALS, useCurrentChainId } from "@/lib/utils";
 
 import MockUSDCAbi from "@/contracts/out/MockUSDC.sol/MockUSDC.json";
 import { CHAIN_CONFIG } from "@/lib/config";
@@ -13,10 +13,10 @@ export const useUsdcBalance = () => {
   const { ready: readyWallets, wallets } = useWallets();
 
   // Get chainId from wallet
-  const currentChainId = parseChainId(84532);
   const embeddedWallet = wallets.find(
     (wallet) => wallet.walletClientType === "privy"
   )!;
+  const [currentChainId, _] = useCurrentChainId();
 
   useEffect(() => {
     const fetchUsdcBalance = async () => {

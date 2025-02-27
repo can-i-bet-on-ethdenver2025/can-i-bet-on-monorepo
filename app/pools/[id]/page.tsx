@@ -2,6 +2,7 @@
 
 import { GET_POOL } from "@/app/queries";
 import { Button } from "@/components/ui/button";
+import { useCurrentChainId } from "@/lib/utils";
 import { Activity } from "@/stories/Activity";
 import { CurrentSpreadCard } from "@/stories/CurrentSpreadCard";
 import { PlaceBetCard } from "@/stories/PlaceBetCard";
@@ -9,7 +10,7 @@ import TweetCard from "@/stories/TweetCard";
 import { useQuery } from "@apollo/client";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { use } from "react";
+import { use, useMemo } from "react";
 
 // See BetList.tsx for the fragment, ass backwards
 
@@ -17,18 +18,22 @@ type Params = Promise<{ id: string }>;
 
 export default function PoolDetailsPage({ params }: { params: Params }) {
   const { id } = use(params);
+  const [currentChainId, _] = useCurrentChainId();
 
-  const { data: pool, loading: poolLoading } = useQuery(GET_POOL, {
-    variables: {
-      poolId: id,
-    },
-    pollInterval: 5000,
-  });
+  const { pool, poolLoading } = useMemo(() => {
+    const { data: pool, loading: poolLoading } = useQuery(GET_POOL, {
+      variables: {
+        poolId: id,
+      },
+      pollInterval: 5000,
+    });
+
+    return { pool, poolLoading };
+  }, [currentChainId]);
 
   if (poolLoading) {
     return <div>Loading...</div>;
   }
-
 
   console.log("pool", pool);
 
@@ -52,11 +57,11 @@ export default function PoolDetailsPage({ params }: { params: Params }) {
           <PlaceBetCard pool={pool?.pool} loading={poolLoading} />
           <CurrentSpreadCard pool={pool?.pool} loading={poolLoading} />
           <Activity
-          poolId={id}
-          showQuestion={false}
-          showPoolImage={false}
-          maxEntries={5}
-        />
+            poolId={id}
+            showQuestion={false}
+            showPoolImage={false}
+            maxEntries={5}
+          />
           <TweetCard poolId={id} className="w-full max-w-md mx-auto" />
         </div>
       ) : (

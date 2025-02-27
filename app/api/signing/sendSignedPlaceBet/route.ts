@@ -1,7 +1,7 @@
 import { CHAIN_CONFIG } from "@/lib/config";
 import { ethers, parseUnits } from "ethers";
 import { NextResponse } from "next/server";
-import { baseSepolia } from "viem/chains";
+import { base, baseSepolia } from "viem/chains";
 import MockUSDCAbi from "@/contracts/out/MockUSDC.sol/MockUSDC.json";
 
 type PlaceBetRequest = {
@@ -31,11 +31,14 @@ const PRIVATE_CHAIN_CONFIG: {
   [baseSepolia.id]: {
     rpcUrl: process.env.BASE_SEPOLIA_RPC_URL || "", // Move to env variable
   },
+  [base.id]: {
+    rpcUrl: process.env.BASE_RPC_URL || "", // Move to env variable
+  },
 };
 
 export async function POST(request: Request) {
   try {
-    console.log('Received request:', request)
+    console.log("Received request:", request);
     const body: PlaceBetRequest = await request.json();
     const chainConfig = CHAIN_CONFIG[body.chainId];
     if (!chainConfig) {
@@ -67,9 +70,9 @@ export async function POST(request: Request) {
       wallet
     );
 
-    console.log('Minting USDC to the user', body.walletAddress, body.amount);
+    console.log("Minting USDC to the user", body.walletAddress, body.amount);
     await usdcContract.mint(body.walletAddress, BigInt(body.amount));
-    console.log('Minted USDC to the user', body.walletAddress, body.amount);
+    console.log("Minted USDC to the user", body.walletAddress, body.amount);
 
     // Create contract instance
     const contract = new ethers.Contract(
@@ -78,36 +81,36 @@ export async function POST(request: Request) {
       wallet
     );
 
-    console.log('Contract address:', chainConfig.applicationContractAddress);
-    console.log('Wallet address:', wallet.address);
-    
+    console.log("Contract address:", chainConfig.applicationContractAddress);
+    console.log("Wallet address:", wallet.address);
+
     // Format permit signature
     const permitSig = {
       v: body.permitSignature.v,
       r: body.permitSignature.r,
-      s: body.permitSignature.s
+      s: body.permitSignature.s,
     };
 
-    console.log('Calling placeBet with the following data:', {
+    console.log("Calling placeBet with the following data:", {
       poolId: body.poolId,
       optionIndex: body.optionIndex,
       amount: body.amount,
       walletAddress: body.walletAddress,
       permitDeadline: body.usdcPermitDeadline,
-      permitSignature: permitSig
+      permitSignature: permitSig,
     });
 
     // convert pool ID from hex to number
     const poolId = parseInt(body.poolId, 16);
 
-    console.log('Data to call TX:', {
+    console.log("Data to call TX:", {
       poolId,
       optionIndex: body.optionIndex,
       amount: BigInt(body.amount),
       walletAddress: body.walletAddress,
       permitDeadline: body.usdcPermitDeadline,
       permitSignature: permitSig,
-    })
+    });
 
     // Call placeBet
     const tx = await contract.placeBet(
@@ -125,7 +128,7 @@ export async function POST(request: Request) {
       }
     );
 
-    console.log('Transaction sent:', tx.hash);
+    console.log("Transaction sent:", tx.hash);
 
     // Don't wait for confirmations, just get the response
     return NextResponse.json({
