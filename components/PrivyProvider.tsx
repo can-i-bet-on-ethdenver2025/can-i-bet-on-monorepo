@@ -19,7 +19,7 @@ export default function PrivyProviderWrapper({
     <PrivyProvider
       appId="cm7b6229i003ccgeozvxyjv2h"
       config={{
-        defaultChain: baseSepolia,
+        defaultChain: base,
         supportedChains: [
           baseSepolia,
           arbitrumSepolia,

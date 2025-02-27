@@ -37,7 +37,7 @@ export const CHAIN_CONFIG: Record<string, ChainConfig> = {
     applicationContractAddress: "0x0000000000000000000000000000000000000000",
     iconUrl: baseIcon,
     backgroundColor: "#0052FF",
-    usdcAddress: "0x0000000000000000000000000000000000000000",
+    usdcAddress: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
     nativeCurrency: {
       symbol: "ETH",
     },

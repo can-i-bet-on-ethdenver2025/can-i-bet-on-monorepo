@@ -1,5 +1,5 @@
 import { CHAIN_CONFIG } from "@/lib/config";
-import { cn } from "@/lib/utils";
+import { cn, parseChainId } from "@/lib/utils";
 import Image from "next/image";
 
 interface NetworkButtonProps {
@@ -15,22 +15,8 @@ export function NetworkButton({
   onClick,
   size = "default",
 }: NetworkButtonProps) {
-  let parsedChainId = chainId;
-
-  if (typeof chainId === "string") {
-    parsedChainId = chainId.replace("eip155:", "");
-  }
-
-  let chainConfig = CHAIN_CONFIG[parsedChainId];
-
-  if (!chainConfig) {
-    parsedChainId = 84532; //TODO Disgusting hack
-    chainConfig = CHAIN_CONFIG[parsedChainId];
-    // console.error(
-    // `No configuration found for chain ID: ${chainId} (parsed: ${parsedChainId})`
-    // );
-    // return null;
-  }
+  let parsedChainId = parseChainId(chainId);
+  const chainConfig = CHAIN_CONFIG[parsedChainId];
 
   return (
     <div

@@ -7,6 +7,7 @@ import { loadDevMessages, loadErrorMessages } from "@apollo/client/dev";
 import { Geist, Geist_Mono } from "next/font/google";
 import { usePathname } from "next/navigation";
 import "./globals.css";
+import { Navbar } from "@/stories/Navbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -51,7 +52,7 @@ export default function RootLayout({
           <PrivyProviderWrapper>
             <ApolloProvider client={client}>
               <div className="flex flex-col min-h-screen relative">
-                {/* <Navbar /> */}
+                <Navbar />
                 <div className="flex-1 relative">{children}</div>
                 <div className="h-16 md:hidden">
                   {/* Spacer for bottom nav on mobile */}

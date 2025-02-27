@@ -2,6 +2,9 @@ import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { CHAIN_CONFIG } from "./config";
 import { Pool, PoolStatus } from "./__generated__/graphql";
+import { useWallets } from "@privy-io/react-auth";
+import { base } from "viem/chains";
+import { Dispatch, SetStateAction, useState } from "react";
 export const USDC_DECIMALS = 6;
 
 export enum FrontendPoolStatus {
@@ -74,7 +77,7 @@ export const shame = (t: string) => {
   return t.indexOf("0x0") === 0 ? t : `0x0${t}`;
 };
 
-export const parseChainId = (chainId: number | string) => {
+export const parseChainId = (chainId: number | string): string => {
   let parsedChainId = chainId;
   if (typeof chainId === "string") {
     parsedChainId = chainId.replace("eip155:", "");
@@ -86,7 +89,7 @@ export const parseChainId = (chainId: number | string) => {
     parsedChainId = 84532;
   }
 
-  return parsedChainId;
+  return String(parsedChainId);
 };
 
 export const getFrontendPoolStatus = (
@@ -105,4 +108,19 @@ export const getFrontendPoolStatus = (
   if (poolStatus === PoolStatus.Graded) {
     return FrontendPoolStatus.Graded;
   }
+};
+
+export const useCurrentChainId = (): [
+  string,
+  Dispatch<SetStateAction<string>>
+] => {
+  const { wallets } = useWallets();
+  const embeddedWallet = wallets.find(
+    (wallet) => wallet.walletClientType === "privy"
+  )!;
+  const chainId = embeddedWallet
+    ? parseChainId(embeddedWallet.chainId)
+    : parseChainId(base.id);
+
+  return useState<string>(chainId);
 };
