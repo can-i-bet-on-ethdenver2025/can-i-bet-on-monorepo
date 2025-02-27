@@ -3,8 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { GetPoolQuery } from "@/lib/__generated__/graphql";
-import { optionColor } from "@/lib/config";
-import { usdcAmountToDollars } from "@/lib/utils";
+import { optionColor, optionColorClasses } from "@/lib/config";
+import {
+  FrontendPoolStatus,
+  getFrontendPoolStatus,
+  usdcAmountToDollars,
+} from "@/lib/utils";
 import { useQuery } from "@apollo/client";
 import { FC } from "react";
 import { RatioBar } from "./RatioBar";
@@ -87,6 +91,11 @@ export const CurrentSpreadCard: FC<CurrentSpreadCardProps> = ({
   // Add this for debugging
   console.log("Ratio items:", ratioItems);
 
+  const frontendPoolStatus = getFrontendPoolStatus(
+    pool.status,
+    pool.betsCloseAt
+  );
+
   return (
     <Card className={cardClassName}>
       {showTitle && (
@@ -105,18 +114,36 @@ export const CurrentSpreadCard: FC<CurrentSpreadCardProps> = ({
         </div>
 
         <div className="flex-col gap-4">
-          {pool.options.map((option: string, index: number) => (
-            <div key={index} className="flex">
-              <div
-                className={`text-lg font-bold mb-2 text-${optionColor[index]}`}
-              >
-                {option}
+          {pool.options.map((option: string, index: number) => {
+            const colorClassnames = optionColorClasses[index];
+            const isWinner =
+              frontendPoolStatus === FrontendPoolStatus.Graded &&
+              parseInt(pool.selectedOption) === index;
+
+            return (
+              <div key={index} className="flex">
+                <div
+                  className={`text-lg font-bold mb-2 ${colorClassnames.text}`}
+                  style={{
+                    backgroundColor: isWinner
+                      ? `hsl(var(--${optionColor[index]}-color) / 0.2)`
+                      : "transparent",
+                    borderColor: isWinner
+                      ? `hsl(var(--${optionColor[index]}-color))`
+                      : "transparent",
+                    borderBottom: isWinner
+                      ? `2px solid hsl(var(--${optionColor[index]}-color))`
+                      : "0",
+                  }}
+                >
+                  {option}
+                </div>
+                <div className="text-lg font-semibold ml-auto">
+                  {usdcAmountToDollars(pool.totalBetsByOption[index] || 0)}
+                </div>
               </div>
-              <div className="text-lg font-semibold ml-auto">
-                {usdcAmountToDollars(pool.totalBetsByOption[index] || 0)}
-              </div>
-            </div>
-          ))}
+            );
+          })}
 
           {showTotalBets && (
             <>

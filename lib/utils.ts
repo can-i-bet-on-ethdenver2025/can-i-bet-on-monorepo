@@ -1,8 +1,14 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { CHAIN_CONFIG } from "./config";
+import { Pool, PoolStatus } from "./__generated__/graphql";
 export const USDC_DECIMALS = 6;
 
+export enum FrontendPoolStatus {
+  Pending = "pending",
+  Grading = "grading",
+  Graded = "graded",
+}
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -81,4 +87,22 @@ export const parseChainId = (chainId: number | string) => {
   }
 
   return parsedChainId;
+};
+
+export const getFrontendPoolStatus = (
+  poolStatus: Pool["status"],
+  betsCloseAt: number
+) => {
+  const now = new Date().getTime();
+  if (poolStatus === PoolStatus.Pending && betsCloseAt * 1000 > now) {
+    return FrontendPoolStatus.Pending;
+  }
+
+  if (poolStatus === PoolStatus.Pending && betsCloseAt * 1000 < now) {
+    return FrontendPoolStatus.Grading;
+  }
+
+  if (poolStatus === PoolStatus.Graded) {
+    return FrontendPoolStatus.Graded;
+  }
 };

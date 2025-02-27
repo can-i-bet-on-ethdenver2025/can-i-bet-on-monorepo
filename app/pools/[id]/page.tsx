@@ -29,6 +29,7 @@ export default function PoolDetailsPage({ params }: { params: Params }) {
     return <div>Loading...</div>;
   }
 
+
   console.log("pool", pool);
 
   return (
@@ -46,19 +47,23 @@ export default function PoolDetailsPage({ params }: { params: Params }) {
         </Link>
       </div>
 
-      <div className="py-4 flex flex-col gap-4">
-        {pool?.pool?.status === "PENDING" && (
-          <PlaceBetCard pool={pool.pool} loading={poolLoading} />
-        )}
-        <CurrentSpreadCard pool={pool?.pool} loading={poolLoading} />
-        <Activity
+      {pool?.pool ? (
+        <div className="py-4 flex flex-col gap-4">
+          <PlaceBetCard pool={pool?.pool} loading={poolLoading} />
+          <CurrentSpreadCard pool={pool?.pool} loading={poolLoading} />
+          <Activity
           poolId={id}
           showQuestion={false}
           showPoolImage={false}
           maxEntries={5}
         />
-        <TweetCard poolId={id} className="w-full max-w-md mx-auto" />
-      </div>
+          <TweetCard poolId={id} className="w-full max-w-md mx-auto" />
+        </div>
+      ) : (
+        <div className="text-red-500 text-center font-medium">
+          Pool not found
+        </div>
+      )}
     </div>
   );
 }

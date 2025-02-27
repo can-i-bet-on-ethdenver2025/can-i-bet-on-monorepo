@@ -10,9 +10,15 @@ import {
   GetBetsQuery,
   GetPoolQuery,
   OrderDirection,
+  PoolStatus,
 } from "@/lib/__generated__/graphql";
-import { optionColorClasses } from "@/lib/config";
-import { USDC_DECIMALS, usdcAmountToDollarsNumber } from "@/lib/utils";
+import { optionColor, optionColorClasses } from "@/lib/config";
+import {
+  FrontendPoolStatus,
+  getFrontendPoolStatus,
+  USDC_DECIMALS,
+  usdcAmountToDollarsNumber,
+} from "@/lib/utils";
 import { BetButton } from "@/stories/BetButton";
 import { ApolloError, useQuery } from "@apollo/client";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -20,6 +26,7 @@ import { useWallets } from "@privy-io/react-auth";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import { CountdownTimer } from "./CountdownTimer";
 // Custom hook for fetching USDC balance
 
 interface PlaceBetCardProps {
@@ -236,6 +243,10 @@ export const PlaceBetCard = ({ pool, loading }: PlaceBetCardProps) => {
   const betAmountInUSDC =
     parseFloat(betAmount || "0") * Math.pow(10, USDC_DECIMALS);
   const { totalBetsByOption, options } = pool;
+  const frontendPoolStatus = getFrontendPoolStatus(
+    pool.status,
+    pool.betsCloseAt
+  );
 
   return (
     <Card className="w-full max-w-md mx-auto">
@@ -245,83 +256,108 @@ export const PlaceBetCard = ({ pool, loading }: PlaceBetCardProps) => {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div>
-          <p className="text-center mb-2">Place a bet</p>
+        {frontendPoolStatus === FrontendPoolStatus.Pending && (
+          <div>
+            <p className="text-center mb-2">Place a bet</p>
 
-          <div className="relative">
-            <span className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400 text-xl">
-              $
-            </span>
-            <input
-              id="betAmount"
-              type="number"
-              {...register("betAmount")}
-              className={`w-full pl-10 pr-24 py-4 text-xl rounded-2xl border transition-colors focus:outline-none bg-black ${
-                errors.betAmount
-                  ? "border-red-500"
-                  : "border-white/60 hover:border-primay/80 focus:border-white"
-              } appearance-none`}
-              min="0"
-              step="1"
-              placeholder="Bet amount"
-              style={{
-                WebkitAppearance: "none",
-                MozAppearance: "textfield",
-              }}
-            />
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex flex-col items-end">
-              <button
-                type="button"
-                onClick={handleMaxClick}
-                className="text-white hover:text-white/80 font-bold text-sm transition-colors"
-                disabled={
-                  isLoadingBalance ||
-                  !usdcBalance ||
-                  parseFloat(usdcBalance) <= 0
-                }
-              >
-                MAX
-              </button>
-              <span className="text-xs text-gray-400 mt-1">
-                {isLoadingBalance
-                  ? "Loading balance..."
-                  : `Balance: $${
-                      usdcBalance
-                        ? usdcAmountToDollarsNumber(parseFloat(usdcBalance))
-                        : 0
-                    }`}
+            <div className="relative">
+              <span className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400 text-xl">
+                $
               </span>
-            </div>
-          </div>
-          {errors.betAmount && (
-            <div className="text-sm text-red-500 mt-1">
-              {errors.betAmount.message}
-            </div>
-          )}
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          {options.map((option, index) => {
-            const colorClassnames = optionColorClasses[index];
-
-            return (
-              <div
-                key={index}
-                className="flex flex-col items-center w-full h-[160px]"
-              >
-                <BetButton
-                  option={option}
-                  optionIndex={index}
-                  poolId={pool.id}
-                  chainId={currentChainId}
-                  amount={betAmountInUSDC.toString()}
-                  colorClassnames={colorClassnames}
-                  totalBetsByOption={totalBetsByOption}
-                  totalBets={pool.totalBets}
-                />
+              <input
+                id="betAmount"
+                type="number"
+                {...register("betAmount")}
+                className={`w-full pl-10 pr-24 py-4 text-xl rounded-2xl border transition-colors focus:outline-none bg-black ${
+                  errors.betAmount
+                    ? "border-red-500"
+                    : "border-white/60 hover:border-primay/80 focus:border-white"
+                } appearance-none`}
+                min="0"
+                step="1"
+                placeholder="Bet amount"
+                style={{
+                  WebkitAppearance: "none",
+                  MozAppearance: "textfield",
+                }}
+              />
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 flex flex-col items-end">
+                <button
+                  type="button"
+                  onClick={handleMaxClick}
+                  className="text-white hover:text-white/80 font-bold text-sm transition-colors"
+                  disabled={
+                    isLoadingBalance ||
+                    !usdcBalance ||
+                    parseFloat(usdcBalance) <= 0
+                  }
+                >
+                  MAX
+                </button>
+                <span className="text-xs text-gray-400 mt-1">
+                  {isLoadingBalance
+                    ? "Loading balance..."
+                    : `Balance: $${
+                        usdcBalance
+                          ? usdcAmountToDollarsNumber(parseFloat(usdcBalance))
+                          : 0
+                      }`}
+                </span>
               </div>
-            );
-          })}
-        </div>
+            </div>
+            {errors.betAmount && (
+              <div className="text-sm text-red-500 mt-1">
+                {errors.betAmount.message}
+              </div>
+            )}
+          </div>
+        )}
+
+        {frontendPoolStatus === FrontendPoolStatus.Pending && (
+          <div className="grid grid-cols-2 gap-4">
+            {options.map((option, index) => {
+              const colorClassnames = optionColorClasses[index];
+
+              return (
+                <div
+                  key={index}
+                  className="flex flex-col items-center w-full h-[160px]"
+                >
+                  <BetButton
+                    option={option}
+                    optionIndex={index}
+                    poolId={pool.id}
+                    chainId={currentChainId}
+                    amount={betAmountInUSDC.toString()}
+                    colorClassnames={colorClassnames}
+                    totalBetsByOption={totalBetsByOption}
+                    totalBets={pool.totalBets}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {frontendPoolStatus === FrontendPoolStatus.Grading && (
+          <div className="text-4xl p-4 border text-yellow-300 text-center">
+            AI is grading the pool, please wait...
+          </div>
+        )}
+
+        {frontendPoolStatus === FrontendPoolStatus.Graded && (
+          <div className="text-xl text-center border rounded-lg p-4">
+            <p className={"mb-4 text-2xl"}>Pool&apos;s Closed</p>
+            AI chose the following:
+            <p
+              className={`${
+                optionColorClasses[pool.selectedOption].text
+              } text-4xl`}
+            >
+              {pool.options[pool.selectedOption]}
+            </p>
+          </div>
+        )}
 
         {/* User's bets section - only show if user has bets and embedded wallet exists */}
         {embeddedWallet && hasUserBets && (
@@ -339,10 +375,22 @@ export const PlaceBetCard = ({ pool, loading }: PlaceBetCardProps) => {
 
                   const colorClassnames = optionColorClasses[index];
 
+                  const isWinner =
+                    pool.status === PoolStatus.Graded &&
+                    parseInt(pool.selectedOption) === index;
+
                   return (
                     <div
                       key={`user-bet-${index}`}
-                      className={`flex items-center justify-between p-3 rounded-lg border ${colorClassnames.border}`}
+                      className={`flex items-center justify-between p-3 rounded-lg border`}
+                      style={{
+                        borderColor: isWinner
+                          ? `hsl(var(--${optionColor[index]}-color))`
+                          : "gray",
+                        backgroundColor: isWinner
+                          ? `hsl(var(--${optionColor[index]}-color) / 0.2)`
+                          : "transparent",
+                      }}
                     >
                       <span className={`font-medium ${colorClassnames.text}`}>
                         {option}
@@ -356,6 +404,9 @@ export const PlaceBetCard = ({ pool, loading }: PlaceBetCardProps) => {
               </div>
             </div>
           </>
+        )}
+        {frontendPoolStatus === FrontendPoolStatus.Pending && (
+          <CountdownTimer betsCloseAt={parseInt(pool.betsCloseAt)} />
         )}
       </CardContent>
     </Card>
