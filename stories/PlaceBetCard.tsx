@@ -130,7 +130,7 @@ const useUserBets = (poolId: string, userAddress?: string) => {
         // Add the new bet at the beginning of the array (most recent first)
         return {
           ...prev,
-          bets: [newBet, ...prev.bets],
+          bets: [newBet, ...(prev?.bets || [])],
         };
       },
     });
@@ -165,10 +165,7 @@ const calculateTotalsByOption = (bets: GetBetsQuery["bets"]) => {
 };
 
 export const PlaceBetCard = ({ pool, loading }: PlaceBetCardProps) => {
-  const {
-    usdcBalance,
-    error: usdcBalanceError,
-  } = useUsdcBalance();
+  const { usdcBalance, error: usdcBalanceError } = useUsdcBalance();
   const { embeddedWallet, chainConfig, currentChainId } = useEmbeddedWallet();
   const { ready, wallets } = useWallets();
 
@@ -299,10 +296,7 @@ export const PlaceBetCard = ({ pool, loading }: PlaceBetCardProps) => {
                   type="button"
                   onClick={handleMaxClick}
                   className="text-white hover:text-white/80 font-bold text-sm transition-colors"
-                  disabled={
-                    !usdcBalance ||
-                    parseFloat(usdcBalance) <= 0
-                  }
+                  disabled={!usdcBalance || parseFloat(usdcBalance) <= 0}
                 >
                   MAX
                 </button>
@@ -310,11 +304,11 @@ export const PlaceBetCard = ({ pool, loading }: PlaceBetCardProps) => {
                   Balance:{" "}
                   <span className="flex items-center gap-1">
                     {renderUsdcPrefix(chainConfig)}
-                      {(() => {
-                        return usdcBalance
-                          ? Number(usdcBalance).toLocaleString()
-                          : 0;
-                      })()}
+                    {(() => {
+                      return usdcBalance
+                        ? Number(usdcBalance).toLocaleString()
+                        : 0;
+                    })()}
                   </span>
                 </span>
               </div>

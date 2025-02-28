@@ -80,7 +80,7 @@ export const Activity: FC<{
         // Add the new bet at the beginning of the array (most recent first)
         return {
           ...prev,
-          bets: [newBet, ...prev.bets],
+          bets: [newBet, ...(prev?.bets || [])],
         };
       },
     });

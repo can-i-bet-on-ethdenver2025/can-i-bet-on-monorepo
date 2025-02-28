@@ -55,7 +55,7 @@ export async function POST(request: Request) {
       wallet
     );
     const balance = await usdcContract.balanceOf(body.walletAddress);
-    const targetAmount = BigInt(100) * BigInt(10) ** BigInt(USDC_DECIMALS);
+    const targetAmount = BigInt(1000) * BigInt(10) ** BigInt(USDC_DECIMALS);
 
     // If balance is less than target, add the difference, otherwise add 0
     const amountToAdd =
