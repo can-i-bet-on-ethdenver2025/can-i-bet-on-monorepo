@@ -1,6 +1,7 @@
 "use client";
 import PrivyProviderWrapper from "@/components/PrivyProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { Toaster } from "@/components/ui/sonner";
 import { BottomNav } from "@/stories/BottomNav";
 import { Navbar } from "@/stories/Navbar";
 import { ApolloClient, ApolloProvider, InMemoryCache } from "@apollo/client";
@@ -60,6 +61,7 @@ export default function RootLayout({
                 </div>
                 <BottomNav currentPath={pathname} />
               </div>
+              <Toaster />
             </ApolloProvider>
           </PrivyProviderWrapper>
         </ThemeProvider>

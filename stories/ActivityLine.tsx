@@ -92,7 +92,7 @@ const ActivityLineComponent: FC<ActivityLineProps> = ({
         <div className="flex-grow min-w-0">
           {showQuestion && (
             <Link href={`/pools/${poolSlug}`} className="block">
-              <div className="text-sm sm:text-base font-bold text-foreground mb-1 hover:underline truncate">
+              <div className="text-sm sm:text-base font-bold text-foreground mb-1 hover:underline">
                 {bet.pool.question}
               </div>
             </Link>
@@ -116,18 +116,20 @@ const ActivityLineComponent: FC<ActivityLineProps> = ({
                   seed={jsNumberForAddress(String(bet.user))}
                 />
               </span>
-              <PlayerAddressChip
-                address={bet.user}
-                showAvatar={false}
-                variant="xs"
-                className="sm:hidden"
-              />
-              <PlayerAddressChip
-                address={bet.user}
-                showAvatar={false}
-                variant="small"
-                className="hidden sm:inline"
-              />
+              <Link href={`/users/${bet.user}`}>
+                <PlayerAddressChip
+                  address={bet.user}
+                  showAvatar={false}
+                  variant="xs"
+                  className="sm:hidden hover:underline"
+                />
+                <PlayerAddressChip
+                  address={bet.user}
+                  showAvatar={false}
+                  variant="small"
+                  className="hidden sm:inline hover:underline"
+                />
+              </Link>
             </div>
             <div className="flex items-center after:content-['·'] after:mx-1 after:text-gray-600">
               <span className="text-xs sm:text-sm whitespace-nowrap flex-shrink-0 flex items-center">

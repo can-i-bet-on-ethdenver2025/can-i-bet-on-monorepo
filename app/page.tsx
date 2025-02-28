@@ -1,6 +1,8 @@
 "use client";
 
 import { GET_POOLS } from "@/app/queries";
+import { useEmbeddedWallet } from "@/components/EmbeddedWalletProvider";
+import { PrivyLoginButton } from "@/components/PrivyLoginButton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -15,8 +17,9 @@ import { CurrentSpreadCard } from "@/stories/CurrentSpreadCard";
 import IconsWithNumbers from "@/stories/IconsWithNumbers";
 import { RatioBar } from "@/stories/RatioBar";
 import { useQuery } from "@apollo/client";
+import { usePrivy } from "@privy-io/react-auth";
 import { formatDistanceToNow } from "date-fns";
-import { Clock, Search, TrendingUp } from "lucide-react";
+import { Clock, Search, TrendingUp, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -62,12 +65,22 @@ const VolumeSparkline: React.FC<{ className?: string }> = ({
   );
 };
 
+// Define a type for the Privy user properties we need
+type PrivyUserInfo = {
+  avatar?: string;
+  name?: string;
+};
+
 export default function PoolsPage() {
   const [activeFilter, setActiveFilter] = useState("newest");
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const filter: GetPoolsQueryVariables["filter"] = {};
+
+  // Add Privy authentication state
+  const { ready, authenticated, user } = usePrivy();
+  const { embeddedWallet } = useEmbeddedWallet();
 
   // Debounce search query to prevent excessive API calls
   useEffect(() => {
@@ -163,7 +176,10 @@ export default function PoolsPage() {
     GET_POOLS,
     {
       variables: {
-        filter: { status: PoolStatus.Pending },
+        filter: {
+          status: PoolStatus.Pending,
+          betsCloseAt_lte: Math.floor(Date.now() / 1000).toString(),
+        },
         orderBy: Pool_OrderBy.TotalBets,
         orderDirection: OrderDirection.Desc,
       },
@@ -172,6 +188,11 @@ export default function PoolsPage() {
       fetchPolicy: "cache-first",
       onCompleted: (data) => {
         console.log("Highest volume pools data:", data);
+        console.log(data.pools[0].betsCloseAt);
+        console.log(Math.floor(Date.now() / 1000));
+        console.log(
+          Math.floor(Date.now() / 1000).toString() > data.pools[0].betsCloseAt
+        );
       },
       onError: (error) => {
         console.error("Error fetching highest volume pools:", error);
@@ -266,7 +287,7 @@ export default function PoolsPage() {
         <div className="hidden md:grid md:grid-cols-12 gap-6">
           {/* Left Column - Logo and Filters */}
           <div className="md:col-span-2 lg:col-span-2">
-            <div className="sticky top-20 space-y-6">
+            <div className="sticky top-20 space-y-6 flex flex-col min-h-[calc(100vh-8rem)]">
               {/* Logo and Website Name */}
               <div className="flex flex-col items-center space-y-3 mb-6">
                 <Link href="/" className="flex flex-col items-center gap-2">
@@ -282,7 +303,7 @@ export default function PoolsPage() {
                   </span>
                 </Link>
                 <Button
-                  className="w-full mt-2 border border-input bg-accent text-white shadow-sm hover:bg-background hover:text-accent-foreground"
+                  className="w-full mt-2 border border-input bg-accent text-white shadow-sm hover:bg-background hover:text-accent-foreground text-xs md:text-xs lg:text-sm px-1 md:px-2 lg:px-4 py-1 md:py-2 h-auto flex items-center justify-center"
                   onClick={() =>
                     window.open(
                       "https://x.com/CanIBetOn",
@@ -291,13 +312,13 @@ export default function PoolsPage() {
                     )
                   }
                 >
-                  <PiXLogo className="w-5 h-5 mr-2" />
-                  <span>Follow @CanIBetOn</span>
+                  <PiXLogo className="w-4 h-4 lg:w-5 lg:h-5 mr-1 lg:mr-2 flex-shrink-0" />
+                  <span className="truncate">Follow @CanIBetOn</span>
                 </Button>
               </div>
               <hr />
               {/* Filters */}
-              <div className="space-y-2">
+              <div className="space-y-2 flex-grow">
                 {FILTERS.map((filter) => (
                   <button
                     key={filter.id}
@@ -312,6 +333,50 @@ export default function PoolsPage() {
                   </button>
                 ))}
               </div>
+
+              {/* User Profile Section - X-style */}
+              {ready && authenticated && (
+                <div className="mt-auto">
+                  <hr className="mb-4" />
+                  <Link href="/users/self" className="block">
+                    <div className="flex items-center p-3 rounded-full hover:bg-gray-800 transition-colors">
+                      <div className="flex-shrink-0 mr-3">
+                        {user && "avatar" in user ? (
+                          <Image
+                            src={(user as PrivyUserInfo).avatar || ""}
+                            alt={(user as PrivyUserInfo).name || "User"}
+                            width={40}
+                            height={40}
+                            className="rounded-full"
+                          />
+                        ) : (
+                          <div className="bg-gray-700 rounded-full w-10 h-10 flex items-center justify-center">
+                            <User size={24} />
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">
+                          {user && "name" in user
+                            ? (user as PrivyUserInfo).name
+                            : "Your Account"}
+                        </p>
+                        <p className="text-sm text-gray-400 truncate">
+                          My Bets
+                        </p>
+                      </div>
+                    </div>
+                  </Link>
+                </div>
+              )}
+              {ready && !authenticated && (
+                <div className="mt-auto">
+                  <hr className="mb-4" />
+                  <div className="p-2">
+                    <PrivyLoginButton />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

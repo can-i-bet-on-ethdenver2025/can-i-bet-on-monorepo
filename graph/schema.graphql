@@ -9,7 +9,8 @@ type Bet @entity {
   poolIntId: BigInt! # uint256
   poolIdHex: Bytes!
   pool: Pool!
-  user: Bytes! # address
+  userAddress: Bytes! # address
+  user: User!
   optionIndex: BigInt! # uint256
   amount: BigInt! # uint256
   createdAt: BigInt!
@@ -148,4 +149,18 @@ type PayoutClaimed @entity(immutable: true) {
 
   chainName: String!
   chainId: BigInt!
+}
+
+type User @entity {
+  id: Bytes!
+  address: Bytes!
+  bets: [Bet!]! @derivedFrom(field: "user")
+  winStreak: BigInt!
+  lossStreak: BigInt!
+  loginStreak: BigInt!
+  lastLogin: BigInt!
+  totalWinCount: BigInt!
+  totalWinAmount: BigInt!
+  totalLossCount: BigInt!
+  totalLossAmount: BigInt!
 }

@@ -7,6 +7,7 @@ import { renderUsdcPrefix } from "@/lib/usdcUtils";
 import { cn, usdcAmountToDollars } from "@/lib/utils";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { useState } from "react";
+import { toast } from "sonner";
 
 type BetButtonProps = {
   option: string;
@@ -88,13 +89,7 @@ export const BetButton = ({
   const potentialEarnings = calculateEarnings();
 
   const handleClick = async () => {
-    console.log("Handling click");
-
-    // If the user is not signed in with Privy, show the popup to allow them to sign in
-    if (!authenticated) {
-      login();
-      return;
-    }
+    if (isLoading) return;
 
     const embeddedWallet = wallets.find(
       (wallet) => wallet.walletClientType === "privy"
@@ -112,10 +107,39 @@ export const BetButton = ({
       );
       console.log("txResult on placeBet", txResult);
 
-      alert("Transaction submitted successfully!");
+      // Format the amount properly using the usdcAmountToDollars function
+      const formattedAmount = usdcAmountToDollars(amount);
+
+      // Determine if the prefix is a string or an image
+      const prefix = chainConfig?.usdcPrefix;
+
+      // If it's a simple string prefix, we can use a template string
+      if (typeof prefix === "string") {
+        const toastDescription = `Your bet of ${prefix}${formattedAmount} has been placed on "${option}"`;
+        toast.success("Transaction submitted successfully!", {
+          description: toastDescription,
+          duration: 5000,
+        });
+      } else {
+        // If it's an image, we need to use JSX
+        toast.success("Transaction submitted successfully!", {
+          description: (
+            <div className="flex flex-wrap items-center">
+              <span>Your bet of </span>
+              {renderUsdcPrefix(chainConfig, false)}
+              <span className="mx-0.5">{formattedAmount}</span>
+              <span> has been placed on &quot;{option}&quot;</span>
+            </div>
+          ),
+          duration: 5000,
+        });
+      }
     } catch (error) {
       console.error("Error processing bet:", error);
-      alert(`Error: ${error instanceof Error ? error.message : String(error)}`);
+      toast.error(`Error placing bet`, {
+        description: error instanceof Error ? error.message : String(error),
+        duration: 5000,
+      });
     } finally {
       setIsLoading(false);
     }

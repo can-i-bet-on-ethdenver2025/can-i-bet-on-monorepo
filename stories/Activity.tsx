@@ -74,7 +74,7 @@ export const Activity: FC<{
         if (!newBet) return prev;
 
         // Check if the bet already exists in our list to avoid duplicates
-        const betExists = prev.bets.some((bet) => bet.id === newBet.id);
+        const betExists = prev.bets?.some((bet) => bet.id === newBet.id);
         if (betExists) return prev;
 
         // Add the new bet at the beginning of the array (most recent first)

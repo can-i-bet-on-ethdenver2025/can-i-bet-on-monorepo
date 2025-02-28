@@ -41,6 +41,9 @@ export function NetworkButton({
     return null;
   }
 
+  // Determine if the button should be interactive
+  const isInteractive = typeof onClick === "function";
+
   return (
     <div
       className={cn(
@@ -50,15 +53,17 @@ export function NetworkButton({
       )}
       style={{ borderColor: chainConfig.backgroundColor }}
     >
-      <button
-        onClick={onClick}
+      <div
+        onClick={isInteractive ? onClick : undefined}
         style={{ backgroundColor: chainConfig.backgroundColor }}
         className={cn(
           "flex items-center justify-center rounded-lg transition-all",
           size === "default"
             ? "w-[12.5rem] h-[3.75rem]"
             : "w-[7.5rem] h-[2rem]",
-          "hover:opacity-80 active:opacity-70"
+          isInteractive
+            ? "hover:opacity-80 active:opacity-70 cursor-pointer"
+            : "cursor-default"
         )}
       >
         <div
@@ -74,7 +79,7 @@ export function NetworkButton({
             className="object-contain"
           />
         </div>
-      </button>
+      </div>
     </div>
   );
 }

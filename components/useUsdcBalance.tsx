@@ -1,5 +1,6 @@
 import MockUSDCAbi from "@/contracts/out/MockUSDC.sol/MockUSDC.json";
 import { USDC_DECIMALS } from "@/lib/utils";
+import { useWallets } from "@privy-io/react-auth";
 import { ethers } from "ethers";
 import { useCallback, useEffect, useState } from "react";
 import { useEmbeddedWallet } from "./EmbeddedWalletProvider";
@@ -8,11 +9,26 @@ export const useUsdcBalance = () => {
   const [usdcBalance, setUsdcBalance] = useState<string | null>(null);
   const [isLoadingBalance, setIsLoadingBalance] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { embeddedWallet, currentChainId, chainConfig } = useEmbeddedWallet();
+  const {
+    embeddedWallet,
+    currentChainId,
+    chainConfig,
+    isLoading: isWalletLoading,
+  } = useEmbeddedWallet();
+  const { ready: walletsReady } = useWallets();
+  const [lastChainId, setLastChainId] = useState<string | null>(null);
 
   const fetchUsdcBalance = useCallback(async () => {
     // Reset state at the beginning of each fetch attempt
     setError(null);
+
+    // Check if wallet is ready and chain has been initialized
+    if (!walletsReady || isWalletLoading) {
+      return;
+    }
+
+    // Update last chain ID
+    setLastChainId(currentChainId);
 
     if (!embeddedWallet) {
       setUsdcBalance("0");
@@ -53,7 +69,6 @@ export const useUsdcBalance = () => {
         ethersProvider
       );
 
-
       try {
         // Get balance
         const balance = await usdcContract.balanceOf(embeddedWallet.address);
@@ -63,26 +78,29 @@ export const useUsdcBalance = () => {
         // Remove all decimal places by parsing to float and then to integer
         setUsdcBalance(Math.floor(parseFloat(formattedBalance)).toString());
       } catch (contractError) {
-        console.error("Contract interaction error:", contractError);
-
         // Handle the specific "could not decode result data" error
         if (
           contractError instanceof Error &&
           (contractError.message.includes("could not decode result data") ||
             contractError.message.includes("BAD_DATA"))
         ) {
-          // This likely means there's no balance or the contract doesn't recognize the address
-          console.log(
-            "No balance found or contract doesn't recognize address - setting to 0"
-          );
+          // This is an expected error when a user has no balance
+          // No need to log as an error since it's a normal condition
+          if (process.env.NODE_ENV === "development") {
+            console.log("No USDC balance found for address - setting to 0");
+          }
           setUsdcBalance("0");
         } else {
+          // Only log unexpected contract errors
+          console.error(
+            "Unexpected contract interaction error:",
+            contractError
+          );
           // Rethrow for the outer catch block to handle other contract errors
           throw contractError;
         }
       }
     } catch (error) {
-
       // Handle specific error types
       if (error instanceof Error) {
         if (error.message.includes("contract not deployed")) {
@@ -114,14 +132,31 @@ export const useUsdcBalance = () => {
     } finally {
       setIsLoadingBalance(false);
     }
-    
-  }, [embeddedWallet, currentChainId, chainConfig]);
+  }, [
+    embeddedWallet,
+    currentChainId,
+    chainConfig,
+    walletsReady,
+    isWalletLoading,
+    lastChainId,
+  ]);
 
+  // Trigger a balance fetch when dependencies change
   useEffect(() => {
-    fetchUsdcBalance();
+    // Only fetch if wallets are ready and wallet loading is complete
+    if (walletsReady && !isWalletLoading) {
+      fetchUsdcBalance();
+    }
+  }, [fetchUsdcBalance, walletsReady, isWalletLoading, currentChainId]);
+
+  // Set up polling interval for balance updates
+  useEffect(() => {
+    // Only set up polling if wallets are ready and wallet loading is complete
+    if (!walletsReady || isWalletLoading) return;
+
     const intervalId = setInterval(fetchUsdcBalance, 5000);
     return () => clearInterval(intervalId);
-  }, [fetchUsdcBalance]);
+  }, [fetchUsdcBalance, walletsReady, isWalletLoading]);
 
   return { usdcBalance, isLoadingBalance, error, refetch: fetchUsdcBalance };
 };
