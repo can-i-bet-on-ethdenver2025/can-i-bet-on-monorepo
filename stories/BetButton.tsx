@@ -1,11 +1,12 @@
 "use client";
 //TODO Doesn't support Option A or B, hardcoded to Yes and No
 import { useEmbeddedWallet } from "@/components/EmbeddedWalletProvider";
-import { placeBet } from "@/lib/betting";
+import { useUsdcBalance } from "@/components/useUsdcBalance";
+import { placeBet, topUpUsdcBalance } from "@/lib/betting";
 import { MAX_OPTIONS, optionColor, OptionColorClasses } from "@/lib/config";
 import { renderUsdcPrefix } from "@/lib/usdcUtils";
-import { cn, usdcAmountToDollars } from "@/lib/utils";
-import { usePrivy, useWallets } from "@privy-io/react-auth";
+import { cn, parseChainId, usdcAmountToDollars } from "@/lib/utils";
+import { useLogin, usePrivy } from "@privy-io/react-auth";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -39,10 +40,25 @@ export const BetButton = ({
   totalBets = "0",
 }: BetButtonProps) => {
   const [isLoading, setIsLoading] = useState(false);
-  const { ready, wallets } = useWallets();
-  const { login, authenticated } = usePrivy();
+  const { authenticated } = usePrivy();
   const { chainConfig } = useEmbeddedWallet();
+  const { embeddedWallet } = useEmbeddedWallet();
+  const { refetch: fetchUsdcBalance } = useUsdcBalance();
 
+  const { login } = useLogin({
+    onComplete: async ({ user }) => {
+      console.log("login complete", embeddedWallet, user);
+      const result = await topUpUsdcBalance({
+        chainId: parseChainId("84532"), //We can always top up user on base sepolia
+        walletAddress: user.wallet?.address || "",
+      });
+      console.log("onComplete useLoginResult", result);
+      //Sleep for 2 seconds to ensure the balance is updated
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      fetchUsdcBalance();
+    },
+  });
   // In Storybook/development, use mock data if real data isn't available
 
   // if (option.length > 24) {
@@ -124,10 +140,13 @@ export const BetButton = ({
 
   const handleClick = async () => {
     if (isLoading) return;
+    if (!embeddedWallet || !authenticated) {
+      console.log("No embedded wallet found, logging in");
+      login();
 
-    const embeddedWallet = wallets.find(
-      (wallet) => wallet.walletClientType === "privy"
-    )!;
+      return;
+    }
+
     try {
       setIsLoading(true);
 

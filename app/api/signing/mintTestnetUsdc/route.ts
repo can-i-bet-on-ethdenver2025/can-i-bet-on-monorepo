@@ -73,6 +73,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       transactionHash: tx.hash,
+      amountMinted: amountToAdd.toString(),
     });
   } catch (error) {
     console.error("Error in mintTestnetUsdc:", error);

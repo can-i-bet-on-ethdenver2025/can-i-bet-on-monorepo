@@ -1,6 +1,7 @@
 import { TopUpUsdcBalanceParams } from "@/app/api/signing/mintTestnetUsdc/route";
 import { ethers } from "ethers";
 import { CHAIN_CONFIG } from "./config";
+import { showSuccessToast } from "./toast";
 
 /**
  * Interface for the parameters needed to get signing properties
@@ -79,11 +80,24 @@ export const getSigningProps = async (params: SigningParams) => {
 export const topUpUsdcBalance = async (params: TopUpUsdcBalanceParams) => {
   console.log("calling topup");
   console.log("params", params);
-  return fetch("/api/signing/mintTestnetUsdc", {
+  const response = await fetch("/api/signing/mintTestnetUsdc", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(params),
   });
+  const data = await response.json();
+  console.log("topup response", data);
+  if (data.success && parseFloat(data.amountMinted) > 0) {
+    // Show success toast when USDC is minted
+    const formattedAmount = (
+      parseFloat(data.amountMinted) /
+      10 ** 6
+    ).toLocaleString();
+    showSuccessToast(
+      `Thanks for dropping by! We've topped up your wallet with ${formattedAmount} USDP, game on!`
+    );
+  }
+  return data;
 };
 
 /**
