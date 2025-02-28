@@ -65,7 +65,7 @@ export async function POST(request: Request) {
       wallet
     );
 
-    await usdcContract.mint(body.userWalletAddress, body.amount);
+    // await usdcContract.mint(body.userWalletAddress, body.amount);
 
     // Get USDC nonce for the user
     const nonce = await usdcContract.nonces(body.userWalletAddress);

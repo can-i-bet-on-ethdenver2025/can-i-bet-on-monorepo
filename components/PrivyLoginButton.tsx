@@ -5,6 +5,8 @@ import { CHAIN_CONFIG } from "@/lib/config";
 import { useCurrentChainId } from "@/lib/utils";
 import MockUSDCAbi from "@/contracts/out/MockUSDC.sol/MockUSDC.json";
 import { topUpUsdcBalance } from "@/lib/betting";
+import { useEffect, useMemo } from "react";
+import { useEmbeddedWallet } from "./EmbeddedWalletProvider";
 
 export const PrivyLogoutButton = () => {
   const { logout } = usePrivy();
@@ -17,24 +19,24 @@ export function PrivyLoginButton() {
   const [currentChainId, _] = useCurrentChainId();
 
   // Get chainId from wallet
-  const embeddedWallet = wallets.find(
-    (wallet) => wallet.walletClientType === "privy"
-  )!;
+  const { embeddedWallet } = useEmbeddedWallet();
 
-  const { login } = useLogin({
-    onComplete: async ({ wasAlreadyAuthenticated }) => {
-      if (!wasAlreadyAuthenticated) {
-        console.log("Topping up USDC balance");
+  useEffect(() => {
+    //Prereqs
+    const makeCall = async () => {
+      console.log({ embeddedWallet });
+      if (embeddedWallet) {
+        console.log("topping up");
         const result = await topUpUsdcBalance({
           chainId: currentChainId,
           walletAddress: embeddedWallet.address,
         });
-        console.log("Topped up USDC balance", { result });
-      } else {
-        console.log("User was already authenticated");
       }
-    },
-  });
+    };
+    makeCall();
+  }, [ready, embeddedWallet]);
+
+  const { login } = useLogin({});
   // Disable login when Privy is not ready or the user is already authenticated
   const disableLogin = !ready || (ready && authenticated);
 

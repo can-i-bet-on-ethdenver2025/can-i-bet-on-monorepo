@@ -70,9 +70,9 @@ export async function POST(request: Request) {
       wallet
     );
 
-    console.log("Mi6nting USDC to the user", body.walletAddress, body.amount);
-    await usdcContract.mint(body.walletAddress, BigInt(body.amount));
-    console.log("Minted USDC to the user", body.walletAddress, body.amount);
+    // console.log("Mi6nting USDC to the user", body.walletAddress, body.amount);
+    // await usdcContract.mint(body.walletAddress, BigInt(body.amount));
+    // console.log("Minted USDC to the user", body.walletAddress, body.amount);
 
     // Create contract instance
     const contract = new ethers.Contract(
