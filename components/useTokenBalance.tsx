@@ -1,9 +1,11 @@
-import { usePublicClient } from "wagmi";
+import { useEffect, useState } from "react";
 import { erc20Abi, formatUnits } from "viem";
-import { useState, useEffect } from "react";
+import { usePublicClient } from "wagmi";
+import { useEmbeddedWallet } from "./EmbeddedWalletProvider";
+
 interface UseTokenBalanceProps {
   tokenAddress: `0x${string}`;
-  userAddress: `0x${string}`;
+  userAddress?: `0x${string}`;
 }
 
 export const useTokenBalance = ({
@@ -12,20 +14,33 @@ export const useTokenBalance = ({
 }: UseTokenBalanceProps) => {
   const publicClient = usePublicClient();
   const [balance, setBalance] = useState<string>("0");
+  const { embeddedWallet } = useEmbeddedWallet();
 
   useEffect(() => {
     const fetchBalanceAndDecimals = async () => {
       if (!publicClient) {
-        console.error("No public client found, can't get token balance")
+        console.error("No public client found, can't get token balance");
         return;
       }
+
+      // Use the provided userAddress or fall back to the embedded wallet address
+      const address =
+        userAddress || (embeddedWallet?.address as `0x${string}` | undefined);
+
+      if (!address) {
+        console.error(
+          "No user address provided and no embedded wallet available"
+        );
+        return;
+      }
+
       try {
         const [rawBalance, decimals] = await Promise.all([
           publicClient.readContract({
             address: tokenAddress,
             abi: erc20Abi,
             functionName: "balanceOf",
-            args: [userAddress],
+            args: [address],
           }),
           publicClient.readContract({
             address: tokenAddress,
@@ -41,10 +56,10 @@ export const useTokenBalance = ({
       }
     };
 
-    if (tokenAddress && userAddress) {
+    if (tokenAddress && (userAddress || embeddedWallet?.address)) {
       fetchBalanceAndDecimals();
     }
-  }, [tokenAddress, userAddress, publicClient]);
+  }, [tokenAddress, userAddress, publicClient, embeddedWallet]);
 
   return balance;
 };

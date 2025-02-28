@@ -1,22 +1,45 @@
-import { CHAIN_CONFIG } from "@/lib/config";
+import { useEmbeddedWallet } from "@/components/EmbeddedWalletProvider";
 import { cn, parseChainId } from "@/lib/utils";
 import Image from "next/image";
 
 interface NetworkButtonProps {
-  chainId: number | string;
+  chainId?: number | string;
   selected?: boolean;
   onClick?: () => void;
   size?: "default" | "small";
 }
 
 export function NetworkButton({
-  chainId,
+  chainId: propChainId,
   selected = false,
   onClick,
   size = "default",
 }: NetworkButtonProps) {
-  let parsedChainId = parseChainId(chainId);
-  const chainConfig = CHAIN_CONFIG[parsedChainId];
+  const { currentChainId, chainConfig: contextChainConfig } =
+    useEmbeddedWallet();
+
+  // Use provided chainId or fall back to the context chainId
+  const chainId = propChainId || currentChainId;
+  const parsedChainId = parseChainId(chainId);
+
+  // Use the chain config from context if available, otherwise get it from the CHAIN_CONFIG
+  const chainConfig =
+    contextChainConfig ||
+    (parsedChainId
+      ? {
+          backgroundColor: "#FFFFFF",
+          iconUrl: "",
+          chain: { name: "Unknown" },
+        }
+      : {
+          backgroundColor: "#FFFFFF",
+          iconUrl: "",
+          chain: { name: "Unknown" },
+        });
+
+  if (!chainConfig) {
+    return null;
+  }
 
   return (
     <div

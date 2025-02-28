@@ -1,100 +1,68 @@
 "use client";
+import { useEmbeddedWallet } from "@/components/EmbeddedWalletProvider";
 import {
   PrivyLoginButton,
   PrivyLogoutButton,
 } from "@/components/PrivyLoginButton";
 import { Button } from "@/components/ui/button";
-import MockUSDCAbi from "@/contracts/out/MockUSDC.sol/MockUSDC.json";
-import { CHAIN_CONFIG } from "@/lib/config";
-import { parseChainId, USDC_DECIMALS, useCurrentChainId } from "@/lib/utils";
+import { Switch } from "@/components/ui/switch";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { useUsdcBalance } from "@/components/useUsdcBalance";
+import { parseChainId } from "@/lib/utils";
 import PromptbetLogo from "@/stories/assets/CanIBetOn Logo.jpg";
-import { usePrivy, useWallets } from "@privy-io/react-auth";
-import { ethers } from "ethers";
-import { Menu, X } from "lucide-react";
+import usdpLogo from "@/stories/assets/usdp-logo.svg";
+import { usePrivy } from "@privy-io/react-auth";
+import { AlertCircle, Menu, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { PiXLogo } from "react-icons/pi";
-import { NetworkButton } from "./NetworkButton";
 import { base, baseSepolia } from "viem/chains";
-import { Switch } from "@/components/ui/switch";
+import { NetworkButton } from "./NetworkButton";
 
 export const defaultChainId = baseSepolia.id;
 
 export const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [usdcBalance, setUsdcBalance] = useState<string | null>(null);
-  const [isLoadingBalance, setIsLoadingBalance] = useState(false);
   const { ready, authenticated } = usePrivy();
-  const { ready: readyWallets, wallets } = useWallets();
+
+  // Use our context for wallet and chain info
+  const { embeddedWallet, currentChainId, switchChain, chainConfig } =
+    useEmbeddedWallet();
+
+  // Use the useUsdcBalance hook instead of implementing fetchUsdcBalance
+  const { usdcBalance, isLoadingBalance, error } = useUsdcBalance();
 
   const handleToggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  const embeddedWallet = wallets.find(
-    (wallet) => wallet.walletClientType === "privy"
-  )!;
+  // Render the USDC prefix based on the chain config
+  const renderUsdcPrefix = () => {
+    const prefix = chainConfig?.usdcPrefix;
 
-  // Get the chain ID from the first wallet if available
-  const [currentChainId, setCurrentChainId] = useCurrentChainId();
+    if (!prefix) return "$";
 
-  // Fetch USDC balance when wallet is connected
-  useEffect(() => {
-    const fetchUsdcBalance = async () => {
-      if (readyWallets && embeddedWallet && currentChainId) {
-        try {
-          setIsLoadingBalance(true);
+    if (typeof prefix === "string") {
+      return prefix;
+    } else {
+      return (
+        <Image
+          src={prefix.src}
+          width={prefix.width || 16}
+          height={prefix.height || 16}
+          alt="USDC"
+          className="inline-block mr-0.5"
+        />
+      );
+    }
+  };
 
-          // Get chain config for the current chain
-          const chainConfig = CHAIN_CONFIG[currentChainId];
-
-          if (
-            !chainConfig ||
-            chainConfig.usdcAddress ===
-              "0x0000000000000000000000000000000000000000"
-          ) {
-            console.error(
-              "No chain config or usdc address found for chain ID:",
-              currentChainId
-            );
-            setUsdcBalance("N/A");
-            return;
-          }
-
-          // Get provider from wallet
-          const provider = await embeddedWallet.getEthereumProvider();
-          const ethersProvider = new ethers.BrowserProvider(provider);
-
-          // Create contract instance
-          const usdcContract = new ethers.Contract(
-            chainConfig.usdcAddress,
-            MockUSDCAbi.abi,
-            ethersProvider
-          );
-
-          // Get balance
-          const balance = await usdcContract.balanceOf(embeddedWallet.address);
-
-          // Format balance (assuming 6 decimals for USDC)
-          const formattedBalance = ethers.formatUnits(balance, USDC_DECIMALS);
-          // Remove all decimal places by parsing to float and then to integer
-          setUsdcBalance(Math.floor(parseFloat(formattedBalance)).toString());
-        } catch (error) {
-          console.error("Error fetching USDC balance:", error);
-          setUsdcBalance("Error");
-        } finally {
-          setIsLoadingBalance(false);
-        }
-      } else {
-        setUsdcBalance(null);
-      }
-    };
-
-    fetchUsdcBalance();
-  }, [readyWallets, wallets, currentChainId]);
-
-  // Get the chain ID from the first wallet if available
   return (
     <nav className="border-b">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -112,21 +80,41 @@ export const Navbar = () => {
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-4">
-          {ready && authenticated && readyWallets && embeddedWallet && (
+          {ready && authenticated && embeddedWallet && (
             <>
               {!isLoadingBalance && (
-                <div className="flex-col text-sm font-medium min-w-24 text-center border rounded-full">
-                  <div className="text-xs text-gray-500">Balance</div>
-                  <div>${usdcBalance}</div>
-                </div>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex-col text-sm font-medium min-w-24 text-center border rounded-full relative">
+                        <div className="text-xs text-gray-500">Balance</div>
+                        <div className="flex items-center justify-center gap-1">
+                          {renderUsdcPrefix()}
+                          {usdcBalance}
+                        </div>
+                        {error && (
+                          <span className="absolute -right-2 -top-2">
+                            <AlertCircle className="h-4 w-4 text-red-500" />
+                          </span>
+                        )}
+                      </div>
+                    </TooltipTrigger>
+                    {error && (
+                      <TooltipContent>
+                        <p>{error}</p>
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
+                </TooltipProvider>
               )}
-              {/* <NetworkButton chainId={currentChainId} size="small" /> */}
+              <NetworkButton size="small" />
               <div className="flex items-center gap-2">
-                <span className="text-sm">
-                  {currentChainId === parseChainId(base.id)
-                    ? "Using $"
-                    : "Using Points"}
-                </span>
+                <Image
+                  src={usdpLogo}
+                  alt="USD Points Logo"
+                  width={20}
+                  height={20}
+                />
                 <Switch
                   checked={currentChainId === parseChainId(base.id)}
                   onCheckedChange={(value) => {
@@ -136,14 +124,13 @@ export const Navbar = () => {
                       baseId: String(base.id),
                     });
                     if (currentChainId === String(parseChainId(base.id))) {
-                      embeddedWallet.switchChain(baseSepolia.id);
-                      setCurrentChainId(parseChainId(baseSepolia.id));
+                      switchChain(baseSepolia.id);
                     } else {
-                      embeddedWallet.switchChain(base.id);
-                      setCurrentChainId(parseChainId(base.id));
+                      switchChain(base.id);
                     }
                   }}
                 />
+                <span>USD</span>
               </div>
             </>
           )}
@@ -181,15 +168,34 @@ export const Navbar = () => {
               <PiXLogo className="w-5 h-5 mr-2" />
               <span>Follow @CanIBetOn</span>
             </Button>
-            {ready && authenticated && readyWallets && embeddedWallet && (
+            {ready && authenticated && embeddedWallet && (
               <>
                 {!isLoadingBalance && (
-                  <div className="flex-col text-sm font-medium min-w-24 text-center border rounded-full">
-                    <div className="text-xs text-gray-500">Balance</div>
-                    <div>${usdcBalance}</div>
-                  </div>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="flex-col text-sm font-medium min-w-24 text-center border rounded-full relative">
+                          <div className="text-xs text-gray-500">Balance</div>
+                          <div className="flex items-center justify-center gap-1">
+                            {renderUsdcPrefix()}
+                            {usdcBalance}
+                          </div>
+                          {error && (
+                            <span className="absolute -right-2 -top-2">
+                              <AlertCircle className="h-4 w-4 text-red-500" />
+                            </span>
+                          )}
+                        </div>
+                      </TooltipTrigger>
+                      {error && (
+                        <TooltipContent>
+                          <p>{error}</p>
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
+                  </TooltipProvider>
                 )}
-                {/* <NetworkButton chainId={currentChainId} size="small" /> */}
+                <NetworkButton size="small" />
               </>
             )}
             {ready && authenticated ? (
