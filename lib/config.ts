@@ -3,7 +3,7 @@ import baseSepoliaIcon from "@/stories/assets/crypto/base-full.svg";
 import usdpLogo from "@/stories/assets/usdp-logo.svg";
 import { base, baseSepolia, Chain } from "viem/chains";
 
-type ChainConfig = {
+export type ChainConfig = {
   chain: Chain;
   applicationContractAddress: `0x${string}`;
   iconUrl: string;

@@ -1,9 +1,9 @@
+import MockUSDCAbi from "@/contracts/out/MockUSDC.sol/MockUSDC.json";
 import { CHAIN_CONFIG } from "@/lib/config";
-import { ethers, parseUnits } from "ethers";
+import { USDC_DECIMALS } from "@/lib/utils";
+import { ethers } from "ethers";
 import { NextResponse } from "next/server";
 import { base, baseSepolia } from "viem/chains";
-import MockUSDCAbi from "@/contracts/out/MockUSDC.sol/MockUSDC.json";
-import { USDC_DECIMALS } from "@/lib/utils";
 
 export type TopUpUsdcBalanceParams = {
   chainId: string | number;
@@ -55,14 +55,16 @@ export async function POST(request: Request) {
       wallet
     );
     const balance = await usdcContract.balanceOf(body.walletAddress);
-    const amountToAdd = Math.max(
-      100 * Math.pow(10, USDC_DECIMALS) - balance,
-      0
-    );
+    const targetAmount = BigInt(100) * BigInt(10) ** BigInt(USDC_DECIMALS);
+
+    // If balance is less than target, add the difference, otherwise add 0
+    const amountToAdd =
+      balance < targetAmount ? targetAmount - balance : BigInt(0);
+
     console.log("Balance:", balance, "Amount to add:", amountToAdd);
 
     console.log("Minting USDC to the user", body.walletAddress, amountToAdd);
-    const tx = await usdcContract.mint(body.walletAddress, BigInt(amountToAdd));
+    const tx = await usdcContract.mint(body.walletAddress, amountToAdd);
     console.log("Minted USDC to the user", body.walletAddress, amountToAdd);
 
     // Create contract instance
@@ -73,10 +75,10 @@ export async function POST(request: Request) {
       transactionHash: tx.hash,
     });
   } catch (error) {
-    console.error("Error in sendSignedPlaceBet:", error);
+    console.error("Error in mintTestnetUsdc:", error);
     return NextResponse.json(
       {
-        error: `Failed to place bet: ${
+        error: `Failed to mint testnet usdc: ${
           error instanceof Error ? error.message : String(error)
         }`,
       },

@@ -14,6 +14,7 @@ import {
   PoolStatus,
 } from "@/lib/__generated__/graphql";
 import { optionColor, optionColorClasses } from "@/lib/config";
+import { renderUsdcPrefix } from "@/lib/usdcUtils";
 import {
   FrontendPoolStatus,
   getFrontendPoolStatus,
@@ -25,7 +26,6 @@ import { ApolloError, useQuery } from "@apollo/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useWallets } from "@privy-io/react-auth";
 import { AlertCircle } from "lucide-react";
-import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -64,11 +64,7 @@ const betFormSchema = z.object({
   betAmount: z
     .string()
     .refine((val) => !isNaN(parseFloat(val)), "Must be a valid number")
-    .refine((val) => parseFloat(val) > 0, "Bet amount must be greater than 0")
-    .refine(
-      (val) => parseFloat(val) <= 10000,
-      "Maximum bet amount is 10,000 USDC"
-    ),
+    .refine((val) => parseFloat(val) > 0, "Bet amount must be greater than 0"),
 });
 
 type BetFormValues = z.infer<typeof betFormSchema>;
@@ -76,7 +72,7 @@ type BetFormValues = z.infer<typeof betFormSchema>;
 // Custom hook to fetch user bets for a specific pool
 const useUserBets = (poolId: string, userAddress?: string) => {
   const [userBets, setUserBets] = useState<GetBetsQuery["bets"]>([]);
-
+  const { refetch: refetchUsdcBalance } = useUsdcBalance();
   // Only query if we have both poolId and userAddress
   const shouldFetch = !!poolId && !!userAddress;
 
@@ -129,6 +125,8 @@ const useUserBets = (poolId: string, userAddress?: string) => {
         const betExists = prev.bets.some((bet) => bet.id === newBet.id);
         if (betExists) return prev;
 
+        // Refetch USDC balance when new bet is detected
+        refetchUsdcBalance();
         // Add the new bet at the beginning of the array (most recent first)
         return {
           ...prev,
@@ -143,7 +141,7 @@ const useUserBets = (poolId: string, userAddress?: string) => {
         unsubscribe();
       }
     };
-  }, [subscribeToMore, filter, shouldFetch]);
+  }, [subscribeToMore, filter, shouldFetch, refetchUsdcBalance]);
 
   return { userBets, loading };
 };
@@ -169,7 +167,6 @@ const calculateTotalsByOption = (bets: GetBetsQuery["bets"]) => {
 export const PlaceBetCard = ({ pool, loading }: PlaceBetCardProps) => {
   const {
     usdcBalance,
-    isLoadingBalance,
     error: usdcBalanceError,
   } = useUsdcBalance();
   const { embeddedWallet, chainConfig, currentChainId } = useEmbeddedWallet();
@@ -201,31 +198,14 @@ export const PlaceBetCard = ({ pool, loading }: PlaceBetCardProps) => {
     },
   });
 
-  // Render the USDC prefix based on the chain config
-  const renderUsdcPrefix = () => {
-    const prefix = chainConfig?.usdcPrefix;
-
-    if (!prefix) return "$";
-
-    if (typeof prefix === "string") {
-      return prefix;
-    } else {
-      return (
-        <Image
-          src={prefix.src}
-          width={prefix.width || 16}
-          height={prefix.height || 16}
-          alt="USDC"
-          className="inline-block"
-        />
-      );
-    }
-  };
-
   // Handle MAX button click
   const handleMaxClick = () => {
     if (usdcBalanceError) {
       // If there's an error with the balance, set a safe default or show an error
+      console.error(
+        "Error with fetching USDC balance in handleMaxClick:",
+        usdcBalanceError
+      );
       setValue("betAmount", "0");
       return;
     }
@@ -295,7 +275,7 @@ export const PlaceBetCard = ({ pool, loading }: PlaceBetCardProps) => {
 
             <div className="relative">
               <span className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400 text-xl flex items-center gap-1">
-                {renderUsdcPrefix()}
+                {renderUsdcPrefix(chainConfig)}
               </span>
               <input
                 id="betAmount"
@@ -320,7 +300,6 @@ export const PlaceBetCard = ({ pool, loading }: PlaceBetCardProps) => {
                   onClick={handleMaxClick}
                   className="text-white hover:text-white/80 font-bold text-sm transition-colors"
                   disabled={
-                    isLoadingBalance ||
                     !usdcBalance ||
                     parseFloat(usdcBalance) <= 0
                   }
@@ -329,16 +308,14 @@ export const PlaceBetCard = ({ pool, loading }: PlaceBetCardProps) => {
                 </button>
                 <span className="text-xs text-gray-400 mt-1 flex items-center">
                   Balance:{" "}
-                  {isLoadingBalance ? (
-                    "Loading..."
-                  ) : (
-                    <span className="flex items-center gap-1">
-                      {renderUsdcPrefix()}
-                      {usdcBalance
-                        ? usdcAmountToDollarsNumber(parseFloat(usdcBalance))
-                        : 0}
-                    </span>
-                  )}
+                  <span className="flex items-center gap-1">
+                    {renderUsdcPrefix(chainConfig)}
+                      {(() => {
+                        return usdcBalance
+                          ? Number(usdcBalance).toLocaleString()
+                          : 0;
+                      })()}
+                  </span>
                 </span>
               </div>
             </div>

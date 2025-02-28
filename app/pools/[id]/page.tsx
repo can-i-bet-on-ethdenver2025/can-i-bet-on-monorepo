@@ -2,7 +2,6 @@
 
 import { GET_POOL } from "@/app/queries";
 import { Button } from "@/components/ui/button";
-import { useCurrentChainId } from "@/lib/utils";
 import { Activity } from "@/stories/Activity";
 import { CurrentSpreadCard } from "@/stories/CurrentSpreadCard";
 import { PlaceBetCard } from "@/stories/PlaceBetCard";
@@ -18,7 +17,6 @@ type Params = Promise<{ id: string }>;
 
 export default function PoolDetailsPage({ params }: { params: Params }) {
   const { id } = use(params);
-  const [currentChainId, _] = useCurrentChainId();
 
   const { data: pool, loading: poolLoading } = useQuery(GET_POOL, {
     variables: {

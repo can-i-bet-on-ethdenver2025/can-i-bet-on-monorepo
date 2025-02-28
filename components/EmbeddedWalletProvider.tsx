@@ -113,7 +113,6 @@ export const EmbeddedWalletProvider = ({
     isLoading,
     switchChain,
   };
-  console.log("EmbeddedWalletProvider", value);
 
   return (
     <EmbeddedWalletContext.Provider value={value}>

@@ -15,11 +15,6 @@ type PlaceBetRequest = {
     r: string;
     s: string;
   };
-  betSignature: {
-    v: number;
-    r: string;
-    s: string;
-  };
   usdcPermitDeadline: number;
 };
 

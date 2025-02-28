@@ -13,6 +13,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useUsdcBalance } from "@/components/useUsdcBalance";
+import { renderUsdcPrefix } from "@/lib/usdcUtils";
 import { parseChainId } from "@/lib/utils";
 import PromptbetLogo from "@/stories/assets/CanIBetOn Logo.jpg";
 import usdpLogo from "@/stories/assets/usdp-logo.svg";
@@ -36,31 +37,10 @@ export const Navbar = () => {
     useEmbeddedWallet();
 
   // Use the useUsdcBalance hook instead of implementing fetchUsdcBalance
-  const { usdcBalance, isLoadingBalance, error } = useUsdcBalance();
+  const { usdcBalance, error } = useUsdcBalance();
 
   const handleToggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
-  };
-
-  // Render the USDC prefix based on the chain config
-  const renderUsdcPrefix = () => {
-    const prefix = chainConfig?.usdcPrefix;
-
-    if (!prefix) return "$";
-
-    if (typeof prefix === "string") {
-      return prefix;
-    } else {
-      return (
-        <Image
-          src={prefix.src}
-          width={prefix.width || 16}
-          height={prefix.height || 16}
-          alt="USDC"
-          className="inline-block mr-0.5"
-        />
-      );
-    }
   };
 
   return (
@@ -82,31 +62,29 @@ export const Navbar = () => {
         <div className="hidden md:flex items-center gap-4">
           {ready && authenticated && embeddedWallet && (
             <>
-              {!isLoadingBalance && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="flex-col text-sm font-medium min-w-24 text-center border rounded-full relative">
-                        <div className="text-xs text-gray-500">Balance</div>
-                        <div className="flex items-center justify-center gap-1">
-                          {renderUsdcPrefix()}
-                          {usdcBalance}
-                        </div>
-                        {error && (
-                          <span className="absolute -right-2 -top-2">
-                            <AlertCircle className="h-4 w-4 text-red-500" />
-                          </span>
-                        )}
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex-col text-sm font-medium min-w-24 text-center border rounded-full relative">
+                      <div className="text-xs text-gray-500">Balance</div>
+                      <div className="flex items-center justify-center gap-1">
+                        {renderUsdcPrefix(chainConfig)}
+                        {parseFloat(usdcBalance || "0").toLocaleString()}
                       </div>
-                    </TooltipTrigger>
-                    {error && (
-                      <TooltipContent>
-                        <p>{error}</p>
-                      </TooltipContent>
-                    )}
-                  </Tooltip>
-                </TooltipProvider>
-              )}
+                      {error && (
+                        <span className="absolute -right-2 -top-2">
+                          <AlertCircle className="h-4 w-4 text-red-500" />
+                        </span>
+                      )}
+                    </div>
+                  </TooltipTrigger>
+                  {error && (
+                    <TooltipContent>
+                      <p>{error}</p>
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              </TooltipProvider>
               <NetworkButton size="small" />
               <div className="flex items-center gap-2">
                 <Image
@@ -170,31 +148,29 @@ export const Navbar = () => {
             </Button>
             {ready && authenticated && embeddedWallet && (
               <>
-                {!isLoadingBalance && (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="flex-col text-sm font-medium min-w-24 text-center border rounded-full relative">
-                          <div className="text-xs text-gray-500">Balance</div>
-                          <div className="flex items-center justify-center gap-1">
-                            {renderUsdcPrefix()}
-                            {usdcBalance}
-                          </div>
-                          {error && (
-                            <span className="absolute -right-2 -top-2">
-                              <AlertCircle className="h-4 w-4 text-red-500" />
-                            </span>
-                          )}
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex-col text-sm font-medium min-w-24 text-center border rounded-full relative">
+                        <div className="text-xs text-gray-500">Balance</div>
+                        <div className="flex items-center justify-center gap-1">
+                          {renderUsdcPrefix(chainConfig)}
+                          {usdcBalance}
                         </div>
-                      </TooltipTrigger>
-                      {error && (
-                        <TooltipContent>
-                          <p>{error}</p>
-                        </TooltipContent>
-                      )}
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
+                        {error && (
+                          <span className="absolute -right-2 -top-2">
+                            <AlertCircle className="h-4 w-4 text-red-500" />
+                          </span>
+                        )}
+                      </div>
+                    </TooltipTrigger>
+                    {error && (
+                      <TooltipContent>
+                        <p>{error}</p>
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
+                </TooltipProvider>
                 <NetworkButton size="small" />
               </>
             )}

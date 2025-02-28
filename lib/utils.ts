@@ -1,8 +1,5 @@
-import { useWallets } from "@privy-io/react-auth";
 import { clsx, type ClassValue } from "clsx";
-import { Dispatch, SetStateAction, useState } from "react";
 import { twMerge } from "tailwind-merge";
-import { base } from "viem/chains";
 import { Pool, PoolStatus } from "./__generated__/graphql";
 import { CHAIN_CONFIG } from "./config";
 export const USDC_DECIMALS = 6;
@@ -61,18 +58,25 @@ export function usdcAmountToDollars(
   const formattedAmount = (amountValue / Math.pow(10, USDC_DECIMALS)).toFixed(
     0
   );
-  return includePrefix ? `$${formattedAmount}` : formattedAmount;
+  // We're handling the currency prefix separately with renderUsdcPrefix
+  // so we'll just return the formatted amount
+  return formattedAmount;
 }
 
 //TODO Redundant
-export function usdcAmountToDollarsNumber(amount: number | string): number {
+export function usdcAmountToDollarsNumber(
+  amount: number | string,
+  alreadyFormatted: boolean = false
+): number {
   let amountValue;
   if (typeof amount === "string") {
     amountValue = parseInt(amount);
   } else {
     amountValue = amount;
   }
-  return Math.round(amountValue / Math.pow(10, USDC_DECIMALS));
+  return alreadyFormatted
+    ? amountValue
+    : Math.round(amountValue / Math.pow(10, USDC_DECIMALS));
 }
 
 export const bigintToHexString = (n: bigint) => {
@@ -114,19 +118,4 @@ export const getFrontendPoolStatus = (
   if (poolStatus === PoolStatus.Graded) {
     return FrontendPoolStatus.Graded;
   }
-};
-
-export const useCurrentChainId = (): [
-  string,
-  Dispatch<SetStateAction<string>>
-] => {
-  const { wallets } = useWallets();
-  const embeddedWallet = wallets.find(
-    (wallet) => wallet.walletClientType === "privy"
-  )!;
-  const chainId = embeddedWallet
-    ? parseChainId(embeddedWallet.chainId)
-    : parseChainId(base.id);
-
-  return useState<string>(chainId);
 };

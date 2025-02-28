@@ -2,12 +2,12 @@
 import PrivyProviderWrapper from "@/components/PrivyProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { BottomNav } from "@/stories/BottomNav";
+import { Navbar } from "@/stories/Navbar";
 import { ApolloClient, ApolloProvider, InMemoryCache } from "@apollo/client";
 import { loadDevMessages, loadErrorMessages } from "@apollo/client/dev";
 import { Geist, Geist_Mono } from "next/font/google";
 import { usePathname } from "next/navigation";
 import "./globals.css";
-import { Navbar } from "@/stories/Navbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,15 +39,16 @@ export default function RootLayout({
   const pathname = usePathname();
 
   return (
-    <html lang="en" className="h-full">
+    <html lang="en" className="h-full dark" style={{ colorScheme: "dark" }}>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased h-full`}
       >
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          defaultTheme="dark"
+          enableSystem={false}
           disableTransitionOnChange
+          forcedTheme="dark"
         >
           <PrivyProviderWrapper>
             <ApolloProvider client={client}>

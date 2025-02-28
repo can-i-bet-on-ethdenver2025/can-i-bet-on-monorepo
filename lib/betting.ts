@@ -1,6 +1,6 @@
+import { TopUpUsdcBalanceParams } from "@/app/api/signing/mintTestnetUsdc/route";
 import { ethers } from "ethers";
 import { CHAIN_CONFIG } from "./config";
-import { TopUpUsdcBalanceParams } from "@/app/api/signing/mintTestnetUsdc/route";
 
 /**
  * Interface for the parameters needed to get signing properties
@@ -78,6 +78,7 @@ export const getSigningProps = async (params: SigningParams) => {
 
 export const topUpUsdcBalance = async (params: TopUpUsdcBalanceParams) => {
   console.log("calling topup");
+  console.log("params", params);
   return fetch("/api/signing/mintTestnetUsdc", {
     method: "POST",
     headers: { "Content-Type": "application/json" },

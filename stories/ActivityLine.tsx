@@ -1,9 +1,9 @@
 import { useEmbeddedWallet } from "@/components/EmbeddedWalletProvider";
 import { GetBetsQuery } from "@/lib/__generated__/graphql";
 import { optionColor } from "@/lib/config";
+import { renderUsdcPrefix } from "@/lib/usdcUtils";
 import { USDC_DECIMALS } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
-import Image from "next/image";
 import Link from "next/link";
 import { FC, memo, useMemo } from "react";
 import Jazzicon, { jsNumberForAddress } from "react-jazzicon";
@@ -53,27 +53,6 @@ const ActivityLineComponent: FC<ActivityLineProps> = ({
     const colorKey = optionColor[optionIdx] || "option-a";
     return getOptionClasses(colorKey);
   }, [optionIdx]);
-
-  // Render the USDC prefix based on the chain config
-  const renderUsdcPrefix = () => {
-    const prefix = chainConfig?.usdcPrefix;
-
-    if (!prefix) return "$";
-
-    if (typeof prefix === "string") {
-      return prefix;
-    } else {
-      return (
-        <Image
-          src={prefix.src}
-          width={prefix.width || 16}
-          height={prefix.height || 16}
-          alt="USDC"
-          className="inline-block mr-0.5"
-        />
-      );
-    }
-  };
 
   // Format timestamp for compact display
   const formatCompactTime = (timestamp: Date) => {
@@ -155,7 +134,7 @@ const ActivityLineComponent: FC<ActivityLineProps> = ({
                 <span className="sm:hidden inline-flex items-center">
                   bet{" "}
                   <span className="flex items-center gap-1 mx-1">
-                    {renderUsdcPrefix()}
+                    {renderUsdcPrefix(chainConfig)}
                     {compactBetAmount}
                   </span>{" "}
                   on
@@ -163,7 +142,7 @@ const ActivityLineComponent: FC<ActivityLineProps> = ({
                 <span className="hidden sm:inline-flex items-center">
                   bet{" "}
                   <span className="flex items-center gap-1 mx-1">
-                    {renderUsdcPrefix()}
+                    {renderUsdcPrefix(chainConfig)}
                     {formattedBetAmount}
                   </span>{" "}
                   on

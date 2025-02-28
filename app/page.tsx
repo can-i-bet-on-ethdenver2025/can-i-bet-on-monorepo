@@ -19,7 +19,7 @@ import { formatDistanceToNow } from "date-fns";
 import { Clock, Search, TrendingUp } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MdStackedLineChart } from "react-icons/md";
 import { PiXLogo } from "react-icons/pi";
 import Jazzicon from "react-jazzicon";
@@ -65,7 +65,23 @@ const VolumeSparkline: React.FC<{ className?: string }> = ({
 export default function PoolsPage() {
   const [activeFilter, setActiveFilter] = useState("newest");
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
   const filter: GetPoolsQueryVariables["filter"] = {};
+
+  // Debounce search query to prevent excessive API calls
+  useEffect(() => {
+    // Show searching state immediately when user types
+    if (searchQuery !== debouncedSearchQuery) {
+      setIsSearching(true);
+    }
+
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300); // 300ms delay
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, debouncedSearchQuery]);
 
   // Set up variables for the main query based on active filter
   let orderBy = Pool_OrderBy.CreatedBlockTimestamp;
@@ -73,10 +89,10 @@ export default function PoolsPage() {
 
   // Do not show pools where bets are closed unless the user is searching for it
   // or has selected "recently closed" filter
-  if (searchQuery.length === 0 && activeFilter !== "recently_closed") {
+  if (debouncedSearchQuery.length === 0 && activeFilter !== "recently_closed") {
     filter.status = PoolStatus.Pending;
-  } else if (searchQuery.length > 0) {
-    filter.question_contains = searchQuery;
+  } else if (debouncedSearchQuery.length > 0) {
+    filter.question_contains = debouncedSearchQuery;
   }
 
   // Apply filter based on selected category
@@ -133,6 +149,13 @@ export default function PoolsPage() {
       orderBy,
       orderDirection,
     },
+    // Use a unique context to prevent this query from affecting the sidebar sections
+    context: { name: "mainSearch" },
+    // This ensures we get loading state updates for all network operations
+    notifyOnNetworkStatusChange: true,
+    onCompleted: () => {
+      setIsSearching(false);
+    },
   });
 
   // Query for highest volume pools
@@ -144,6 +167,9 @@ export default function PoolsPage() {
         orderBy: Pool_OrderBy.TotalBets,
         orderDirection: OrderDirection.Desc,
       },
+      // Use a unique context to isolate this query
+      context: { name: "highestVolume" },
+      fetchPolicy: "cache-first",
       onCompleted: (data) => {
         console.log("Highest volume pools data:", data);
       },
@@ -162,6 +188,9 @@ export default function PoolsPage() {
         orderBy: Pool_OrderBy.BetsCloseAt,
         orderDirection: OrderDirection.Asc,
       },
+      // Use a unique context to isolate this query
+      context: { name: "endingSoon" },
+      fetchPolicy: "cache-first",
       onCompleted: (data) => {
         console.log("Ending soon pools data:", data);
       },
@@ -171,7 +200,7 @@ export default function PoolsPage() {
     }
   );
 
-  if (poolsLoading) {
+  if (poolsLoading && !isSearching) {
     return (
       <main className="min-h-screen pb-24 md:pb-8">
         <div className="container mx-auto px-4 py-8">
@@ -190,16 +219,28 @@ export default function PoolsPage() {
       <div className="container mx-auto px-4 py-8">
         {/* Mobile Search Bar - only visible on small screens */}
         <div className="relative mb-6 md:hidden">
-          <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-            <Search className="h-5 w-5 text-gray-400" />
-          </div>
-          <Input
-            type="search"
-            placeholder="Search pools..."
-            className="pl-10 h-12 text-lg border-2 border-gray-200 hover:border-primary/30 focus-visible:ring-primary/20 focus-visible:border-primary"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+          <form onSubmit={(e) => e.preventDefault()}>
+            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+              <Search className="h-5 w-5 text-gray-400" />
+            </div>
+            <Input
+              type="search"
+              placeholder="Search pools..."
+              className="pl-10 h-12 text-lg border-2 border-gray-200 hover:border-primary/30 focus-visible:ring-primary/20 focus-visible:border-primary"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                }
+              }}
+            />
+            {isSearching && (
+              <div className="absolute inset-y-0 right-3 flex items-center">
+                <div className="h-4 w-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            )}
+          </form>
         </div>
 
         {/* Mobile Filter Tabs - only visible on small screens */}
@@ -343,16 +384,28 @@ export default function PoolsPage() {
             <div className="sticky top-20 space-y-6">
               {/* Search Bar */}
               <div className="relative">
-                <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-                  <Search className="h-5 w-5 text-gray-400" />
-                </div>
-                <Input
-                  type="search"
-                  placeholder="Search pools..."
-                  className="pl-10 h-12 text-lg rounded-full border border-gray-200 hover:border-primary/30 focus-visible:ring-primary/20 focus-visible:border-primary"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
+                <form onSubmit={(e) => e.preventDefault()}>
+                  <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                    <Search className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <Input
+                    type="search"
+                    placeholder="Search pools..."
+                    className="pl-10 h-12 text-lg rounded-full border border-gray-200 hover:border-primary/30 focus-visible:ring-primary/20 focus-visible:border-primary"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                      }
+                    }}
+                  />
+                  {isSearching && (
+                    <div className="absolute inset-y-0 right-3 flex items-center">
+                      <div className="h-4 w-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                  )}
+                </form>
               </div>
 
               {/* Highest Volume Pools */}

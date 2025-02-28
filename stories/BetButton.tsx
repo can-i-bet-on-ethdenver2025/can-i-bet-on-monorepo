@@ -3,9 +3,9 @@
 import { useEmbeddedWallet } from "@/components/EmbeddedWalletProvider";
 import { placeBet } from "@/lib/betting";
 import { MAX_OPTIONS, optionColor, OptionColorClasses } from "@/lib/config";
+import { renderUsdcPrefix } from "@/lib/usdcUtils";
 import { cn, usdcAmountToDollars } from "@/lib/utils";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
-import Image from "next/image";
 import { useState } from "react";
 
 type BetButtonProps = {
@@ -110,6 +110,7 @@ export const BetButton = ({
         optionIndex,
         amount
       );
+      console.log("txResult on placeBet", txResult);
 
       alert("Transaction submitted successfully!");
     } catch (error) {
@@ -117,30 +118,6 @@ export const BetButton = ({
       alert(`Error: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  // Render the USDC prefix based on the chain config
-  const renderUsdcPrefix = () => {
-    const prefix = chainConfig?.usdcPrefix;
-
-    if (!prefix) return "+$";
-
-    if (typeof prefix === "string") {
-      return `+${prefix}`;
-    } else {
-      return (
-        <>
-          +
-          <Image
-            src={prefix.src}
-            width={prefix.width || 16}
-            height={prefix.height || 16}
-            alt="USDC"
-            className="inline-block mr-0.5"
-          />
-        </>
-      );
     }
   };
 
@@ -211,7 +188,7 @@ export const BetButton = ({
               className={`text-lg font-medium w-full text-center flex items-center justify-center`}
             >
               <span className="flex items-center gap-1">
-                {renderUsdcPrefix()}
+                {renderUsdcPrefix(chainConfig, true)}
                 {usdcAmountToDollars(potentialEarnings)}
               </span>
             </span>
