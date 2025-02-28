@@ -186,7 +186,7 @@ interface UserBetsActivityProps {
 }
 
 const UserBetsActivity: FC<UserBetsActivityProps> = ({ address }) => {
-  const [maxEntries, setMaxEntries] = useState(10);
+  const maxEntries = 10;
   const [poolBets, setPoolBets] = useState<GetBetsQuery["bets"]>([]);
   const [showAdditionalBets, setShowAdditionalBets] = useState(0);
   const [hasMoreBets, setHasMoreBets] = useState(true);

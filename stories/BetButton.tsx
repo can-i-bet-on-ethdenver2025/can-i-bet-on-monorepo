@@ -52,7 +52,21 @@ export const BetButton = ({
         chainId: parseChainId("84532"), //We can always top up user on base sepolia
         walletAddress: user.wallet?.address || "",
       });
-      console.log("onComplete useLoginResult", result);
+
+      if (!result.success) {
+        if (result.error && result.rateLimitReset) {
+          // Rate limited case - log but don't escalate
+          console.log(
+            `USDC top-up rate limited: ${result.error}. Available again in ${result.rateLimitReset}`
+          );
+        } else if (result.error) {
+          // Other error - use console.error but don't escalate to user
+          console.error(`USDC top-up failed: ${result.error}`);
+        }
+      } else {
+        console.log("BetButton login USDC top-up result:", result);
+      }
+
       //Sleep for 2 seconds to ensure the balance is updated
       await new Promise((resolve) => setTimeout(resolve, 2000));
 

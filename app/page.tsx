@@ -1,7 +1,6 @@
 "use client";
 
 import { GET_POOLS } from "@/app/queries";
-import { useEmbeddedWallet } from "@/components/EmbeddedWalletProvider";
 import { PrivyLoginButton } from "@/components/PrivyLoginButton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -80,7 +79,6 @@ export default function PoolsPage() {
 
   // Add Privy authentication state
   const { ready, authenticated, user } = usePrivy();
-  const { embeddedWallet } = useEmbeddedWallet();
 
   // Debounce search query to prevent excessive API calls
   useEffect(() => {

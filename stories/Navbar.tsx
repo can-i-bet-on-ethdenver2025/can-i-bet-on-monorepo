@@ -127,21 +127,34 @@ export const Navbar = () => {
                   width={20}
                   height={20}
                 />
-                <Switch
-                  checked={currentChainId === parseChainId(base.id)}
-                  onCheckedChange={(value) => {
-                    console.log({
-                      value,
-                      currentChainId,
-                      baseId: String(base.id),
-                    });
-                    if (currentChainId === String(parseChainId(base.id))) {
-                      switchChain(baseSepolia.id);
-                    } else {
-                      switchChain(base.id);
-                    }
-                  }}
-                />
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Switch
+                        checked={currentChainId === parseChainId(base.id)}
+                        onCheckedChange={(value) => {
+                          console.log({
+                            value,
+                            currentChainId,
+                            baseId: String(base.id),
+                          });
+                          if (
+                            currentChainId === String(parseChainId(base.id))
+                          ) {
+                            switchChain(baseSepolia.id);
+                          } else {
+                            switchChain(base.id);
+                          }
+                        }}
+                        className="bg-gray-800"
+                        disabled={true}
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Mainnet coming soon</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
                 <span>USD</span>
               </div>
             </>
@@ -172,16 +185,28 @@ export const Navbar = () => {
                       width={20}
                       height={20}
                     />
-                    <Switch
-                      checked={currentChainId === parseChainId(base.id)}
-                      onCheckedChange={(value) => {
-                        if (currentChainId === String(parseChainId(base.id))) {
-                          switchChain(baseSepolia.id);
-                        } else {
-                          switchChain(base.id);
-                        }
-                      }}
-                    />
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Switch
+                            checked={currentChainId === parseChainId(base.id)}
+                            onCheckedChange={() => {
+                              if (
+                                currentChainId === String(parseChainId(base.id))
+                              ) {
+                                switchChain(baseSepolia.id);
+                              } else {
+                                switchChain(base.id);
+                              }
+                            }}
+                            disabled={true}
+                          />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Mainnet coming soon</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                     <span>USD</span>
                   </div>
                 )}

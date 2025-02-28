@@ -1,4 +1,7 @@
-import { TopUpUsdcBalanceParams } from "@/app/api/signing/mintTestnetUsdc/route";
+import {
+  TopUpUsdcBalanceParams,
+  TopUpUsdcBalanceResponse,
+} from "@/app/api/signing/mintTestnetUsdc/route";
 import { ethers } from "ethers";
 import { CHAIN_CONFIG } from "./config";
 import { showSuccessToast } from "./toast";
@@ -77,7 +80,9 @@ export const getSigningProps = async (params: SigningParams) => {
   return signingData;
 };
 
-export const topUpUsdcBalance = async (params: TopUpUsdcBalanceParams) => {
+export const topUpUsdcBalance = async (
+  params: TopUpUsdcBalanceParams
+): Promise<TopUpUsdcBalanceResponse> => {
   console.log("calling topup");
   console.log("params", params);
   const response = await fetch("/api/signing/mintTestnetUsdc", {
@@ -85,7 +90,7 @@ export const topUpUsdcBalance = async (params: TopUpUsdcBalanceParams) => {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(params),
   });
-  const data = await response.json();
+  const data = (await response.json()) as TopUpUsdcBalanceResponse;
   console.log("topup response", data);
   if (data.success && parseFloat(data.amountMinted) > 0) {
     // Show success toast when USDC is minted
@@ -96,6 +101,22 @@ export const topUpUsdcBalance = async (params: TopUpUsdcBalanceParams) => {
     showSuccessToast(
       `Thanks for dropping by! We've topped up your wallet with ${formattedAmount} USDP, game on!`
     );
+  } else if (data.success && parseFloat(data.amountMinted) === 0) {
+    console.log("user already has enough USDP, no need to top up");
+  } else if (!data.success) {
+    if (response.status === 429) {
+      console.log(
+        `User signed in has already received their USDP mint, cooldown ends in ${
+          data.rateLimitReset || "12 hours?"
+        } (current time: ${new Date().toLocaleString()})`
+      );
+    } else {
+      console.error(
+        "failed to top up USDC with non-429 error",
+        response.status,
+        data
+      );
+    }
   }
   return data;
 };
