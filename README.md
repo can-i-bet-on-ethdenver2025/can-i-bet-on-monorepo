@@ -6,7 +6,7 @@
 - [contracts](./contracts) - source code and scripts for the contracts
 - [custom indexer](./graph) - Custom indexer setup to track pools and bets for the app
 
-We have a separate repo for the agent code, which can be [found in can-i-bet-on-ethdenver2025/can-i-bet-on-agent here](https://github.com/can-i-bet-on-ethdenver2025/can-i-bet-on-agent). There you will find our X and Telegram agents that create betting pools, and our custom oracle agent that grades the pools
+We have a separate repo for the agent code, which can be found on GitHub here in [can-i-bet-on-ethdenver2025/can-i-bet-on-agent](https://github.com/can-i-bet-on-ethdenver2025/can-i-bet-on-agent). There you will find our X and Telegram agents that create betting pools, and our custom oracle agent that grades the pools
 
 ## Production
 
@@ -29,4 +29,4 @@ Our mainnet contract is deployed on Base here:
 - [Chainlink](https://chain.link) - We use Chainlink Functions the [manage grading betting pools in a decentralized way](https://github.com/can-i-bet-on-ethdenver2025/can-i-bet-on-monorepo/blob/main/contracts/src/BettingPools.sol#L271)
 - [The Graph](https://thegraph.com) - We use The Graph to [index our bets and pools](https://github.com/can-i-bet-on-ethdenver2025/can-i-bet-on-monorepo/tree/main/graph) to display stats + use it for real time updating in the frontend w/ subgraph subscriptions. Our production app runs against [Subgraph Studio here](https://api.studio.thegraph.com/query/105510/promptbet/version/latest)
 - [Privy](https://www.privy.io) - We use Privy's embedded wallet universally across the app and intend to use its funding onramp later to avoid having to go through so many menus to place bets w/ traditional web3 wallets. You can see the privy integration [in our automatic faucet/top up here](https://github.com/can-i-bet-on-ethdenver2025/can-i-bet-on-monorepo/blob/main/components/PrivyLoginButton.tsx#L54), how we use it to [sign in and sign up here](https://github.com/can-i-bet-on-ethdenver2025/can-i-bet-on-monorepo/blob/main/components/PrivyLoginButton.tsx#L10)
-- [Alchemy](https://www.alchemy.com) - [Alchemy is our private RPC provider](https://github.com/can-i-bet-on-ethdenver2025/can-i-bet-on-monorepo/blob/main/app/api/signing/getSigningProps/route.ts#L15). Private RPCs were critical for managing gasless transactions, we built our backend around Alchemy.
+- [Alchemy](https://www.alchemy.com) - [Alchemy is our private RPC provider](https://github.com/can-i-bet-on-ethdenver2025/can-i-bet-on-monorepo/blob/main/app/api/signing/getSigningProps/route.ts#L15). Private RPCs were critical for managing gasless transactions, we built our backend around Alchemy
