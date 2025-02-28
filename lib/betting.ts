@@ -188,6 +188,7 @@ export const placeBet = async (
   optionIndex: number,
   amount: string
 ) => {
+  console.log("placing bet", poolId, optionIndex, amount);
   if (!embeddedWallet?.getEthereumProvider) {
     throw new Error("Wallet does not support Ethereum provider");
   }

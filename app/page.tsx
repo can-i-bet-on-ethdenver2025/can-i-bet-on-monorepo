@@ -105,7 +105,7 @@ export default function PoolsPage() {
   if (debouncedSearchQuery.length === 0 && activeFilter !== "recently_closed") {
     filter.status = PoolStatus.Pending;
   } else if (debouncedSearchQuery.length > 0) {
-    filter.question_contains = debouncedSearchQuery;
+    filter.question_contains_nocase = debouncedSearchQuery;
   }
 
   // Apply filter based on selected category

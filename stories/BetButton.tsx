@@ -101,7 +101,7 @@ export const BetButton = ({
       const txResult = await placeBet(
         embeddedWallet,
         chainId,
-        poolId,
+        poolId.replace(/\.?0+$/, ''),
         optionIndex,
         amount
       );
