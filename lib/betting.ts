@@ -75,6 +75,14 @@ export const getSigningProps = async (params: SigningParams) => {
   return signingData;
 };
 
+export const topUpUsdcBalance = async (params: TopUpUsdcBalanceParams) => {
+  return fetch("/api/signing/mintTestnetUsdc", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(params),
+  });
+};
+
 /**
  * Signs a USDC permit using EIP-712
  */

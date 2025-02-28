@@ -60,7 +60,7 @@ export const CurrentSpreadCard: FC<CurrentSpreadCardProps> = ({
   const loading = propLoading || queryLoading;
 
   // Add this for debugging
-  console.log("Pool data:", pool);
+  // console.log("Pool data:", pool);
 
   if (loading) return <LoadingSkeleton />;
   if (error || !pool) {
@@ -89,7 +89,7 @@ export const CurrentSpreadCard: FC<CurrentSpreadCardProps> = ({
   ];
 
   // Add this for debugging
-  console.log("Ratio items:", ratioItems);
+  // console.log("Ratio items:", ratioItems);
 
   const frontendPoolStatus = getFrontendPoolStatus(
     pool.status,

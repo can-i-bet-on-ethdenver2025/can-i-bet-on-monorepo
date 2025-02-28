@@ -19,7 +19,7 @@ import { NetworkButton } from "./NetworkButton";
 import { base, baseSepolia } from "viem/chains";
 import { Switch } from "@/components/ui/switch";
 
-export const defaultChainId = base.id;
+export const defaultChainId = baseSepolia.id;
 
 export const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
