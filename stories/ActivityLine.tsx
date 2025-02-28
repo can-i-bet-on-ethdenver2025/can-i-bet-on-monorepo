@@ -1,7 +1,9 @@
+import { useEmbeddedWallet } from "@/components/EmbeddedWalletProvider";
 import { GetBetsQuery } from "@/lib/__generated__/graphql";
 import { optionColor } from "@/lib/config";
 import { USDC_DECIMALS } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
+import Image from "next/image";
 import Link from "next/link";
 import { FC, memo, useMemo } from "react";
 import Jazzicon, { jsNumberForAddress } from "react-jazzicon";
@@ -33,6 +35,7 @@ const ActivityLineComponent: FC<ActivityLineProps> = ({
   showPoolImage = true,
   showSeparator = true,
 }) => {
+  const { chainConfig } = useEmbeddedWallet();
   const poolSlug = bet.pool.id.toString();
   const timestamp = new Date(Number(bet.blockTimestamp) * 1000);
   const optionIdx = Number(bet.optionIndex);
@@ -40,17 +43,37 @@ const ActivityLineComponent: FC<ActivityLineProps> = ({
   // Format bet amount as requested - human readable with commas and no cents
   const betAmountInUSDC = Number(bet.amount) / Math.pow(10, USDC_DECIMALS);
   // Use compact notation for small screens
-  const formattedBetAmount = `$${Math.round(betAmountInUSDC).toLocaleString()}`;
-  const compactBetAmount = `$${
+  const formattedBetAmount = Math.round(betAmountInUSDC).toLocaleString();
+  const compactBetAmount =
     Math.round(betAmountInUSDC) >= 1000
       ? `${(Math.round(betAmountInUSDC) / 1000).toFixed(1)}k`
-      : Math.round(betAmountInUSDC)
-  }`;
+      : Math.round(betAmountInUSDC).toString();
 
   const optionClasses = useMemo(() => {
     const colorKey = optionColor[optionIdx] || "option-a";
     return getOptionClasses(colorKey);
   }, [optionIdx]);
+
+  // Render the USDC prefix based on the chain config
+  const renderUsdcPrefix = () => {
+    const prefix = chainConfig?.usdcPrefix;
+
+    if (!prefix) return "$";
+
+    if (typeof prefix === "string") {
+      return prefix;
+    } else {
+      return (
+        <Image
+          src={prefix.src}
+          width={prefix.width || 16}
+          height={prefix.height || 16}
+          alt="USDC"
+          className="inline-block mr-0.5"
+        />
+      );
+    }
+  };
 
   // Format timestamp for compact display
   const formatCompactTime = (timestamp: Date) => {
@@ -129,9 +152,21 @@ const ActivityLineComponent: FC<ActivityLineProps> = ({
             </div>
             <div className="flex items-center after:content-['·'] after:mx-1 after:text-gray-600">
               <span className="text-xs sm:text-sm whitespace-nowrap flex-shrink-0 flex items-center">
-                <span className="sm:hidden">bet {compactBetAmount} on</span>
-                <span className="hidden sm:inline">
-                  bet {formattedBetAmount} on
+                <span className="sm:hidden inline-flex items-center">
+                  bet{" "}
+                  <span className="flex items-center gap-1 mx-1">
+                    {renderUsdcPrefix()}
+                    {compactBetAmount}
+                  </span>{" "}
+                  on
+                </span>
+                <span className="hidden sm:inline-flex items-center">
+                  bet{" "}
+                  <span className="flex items-center gap-1 mx-1">
+                    {renderUsdcPrefix()}
+                    {formattedBetAmount}
+                  </span>{" "}
+                  on
                 </span>
               </span>
             </div>

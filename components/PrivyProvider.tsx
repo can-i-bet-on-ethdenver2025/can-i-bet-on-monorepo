@@ -9,6 +9,7 @@ import {
   scrollSepolia,
   sepolia,
 } from "viem/chains";
+import { EmbeddedWalletProvider } from "./EmbeddedWalletProvider";
 
 export default function PrivyProviderWrapper({
   children,
@@ -42,7 +43,7 @@ export default function PrivyProviderWrapper({
         },
       }}
     >
-      {children}
+      <EmbeddedWalletProvider>{children}</EmbeddedWalletProvider>
     </PrivyProvider>
   );
 }

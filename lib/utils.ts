@@ -1,10 +1,10 @@
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
-import { CHAIN_CONFIG } from "./config";
-import { Pool, PoolStatus } from "./__generated__/graphql";
 import { useWallets } from "@privy-io/react-auth";
-import { base } from "viem/chains";
+import { clsx, type ClassValue } from "clsx";
 import { Dispatch, SetStateAction, useState } from "react";
+import { twMerge } from "tailwind-merge";
+import { base } from "viem/chains";
+import { Pool, PoolStatus } from "./__generated__/graphql";
+import { CHAIN_CONFIG } from "./config";
 export const USDC_DECIMALS = 6;
 
 export enum FrontendPoolStatus {
@@ -48,14 +48,20 @@ export function generateRandomColor(isLight: boolean) {
   return hslToHex(hue, saturation, lightness);
 }
 
-export function usdcAmountToDollars(amount: number | string): string {
+export function usdcAmountToDollars(
+  amount: number | string,
+  includePrefix: boolean = true
+): string {
   let amountValue;
   if (typeof amount === "string") {
     amountValue = parseInt(amount);
   } else {
     amountValue = amount;
   }
-  return `$${(amountValue / Math.pow(10, USDC_DECIMALS)).toFixed(0)}`;
+  const formattedAmount = (amountValue / Math.pow(10, USDC_DECIMALS)).toFixed(
+    0
+  );
+  return includePrefix ? `$${formattedAmount}` : formattedAmount;
 }
 
 //TODO Redundant

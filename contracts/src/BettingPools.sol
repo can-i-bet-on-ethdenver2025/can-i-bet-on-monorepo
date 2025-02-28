@@ -79,6 +79,7 @@ contract BettingPools is Ownable, FunctionsClient {
 
     // State
     ERC20Permit usdc;
+cccccblefrehichrtdtnufbgkucdjkljbljluknvhblj
 
     uint256 public nextPoolId = 1;
     uint256 public nextBetId = 1;
@@ -307,11 +308,11 @@ contract BettingPools is Ownable, FunctionsClient {
           continue;
         }
 
-        uint256 loosingOption = pools[poolId].winningOption == 0 ? 1 : 0;
+        uint256 losingOption = pools[poolId].winningOption == 0 ? 1 : 0;
 
         if (bets[betId].option == pools[poolId].winningOption) {
           uint256 winAmount =
-            (bets[betId].amount * pools[poolId].betTotals[loosingOption]) /
+            (bets[betId].amount * pools[poolId].betTotals[losingOption]) /
               pools[poolId].betTotals[pools[poolId].winningOption] + bets[betId].amount;
           uint256 fee = (winAmount * PAYOUT_FEE_BP) / 10000;
           uint256 payout = winAmount - fee;

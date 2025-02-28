@@ -10,7 +10,7 @@ import TweetCard from "@/stories/TweetCard";
 import { useQuery } from "@apollo/client";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { use, useMemo } from "react";
+import { use } from "react";
 
 // See BetList.tsx for the fragment, ass backwards
 
@@ -20,16 +20,12 @@ export default function PoolDetailsPage({ params }: { params: Params }) {
   const { id } = use(params);
   const [currentChainId, _] = useCurrentChainId();
 
-  const { pool, poolLoading } = useMemo(() => {
-    const { data: pool, loading: poolLoading } = useQuery(GET_POOL, {
-      variables: {
-        poolId: id,
-      },
-      pollInterval: 5000,
-    });
-
-    return { pool, poolLoading };
-  }, [currentChainId]);
+  const { data: pool, loading: poolLoading } = useQuery(GET_POOL, {
+    variables: {
+      poolId: id,
+    },
+    pollInterval: 5000,
+  });
 
   if (poolLoading) {
     return <div>Loading...</div>;

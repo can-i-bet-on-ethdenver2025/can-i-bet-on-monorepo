@@ -1,14 +1,11 @@
 "use client";
 //TODO Doesn't support Option A or B, hardcoded to Yes and No
+import { useEmbeddedWallet } from "@/components/EmbeddedWalletProvider";
 import { placeBet } from "@/lib/betting";
-import {
-  CHAIN_CONFIG,
-  MAX_OPTIONS,
-  optionColor,
-  OptionColorClasses,
-} from "@/lib/config";
+import { MAX_OPTIONS, optionColor, OptionColorClasses } from "@/lib/config";
 import { cn, usdcAmountToDollars } from "@/lib/utils";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
+import Image from "next/image";
 import { useState } from "react";
 
 type BetButtonProps = {
@@ -43,7 +40,7 @@ export const BetButton = ({
   const [isLoading, setIsLoading] = useState(false);
   const { ready, wallets } = useWallets();
   const { login, authenticated } = usePrivy();
-  const chainConfig = CHAIN_CONFIG[chainId];
+  const { chainConfig } = useEmbeddedWallet();
 
   // In Storybook/development, use mock data if real data isn't available
 
@@ -123,6 +120,30 @@ export const BetButton = ({
     }
   };
 
+  // Render the USDC prefix based on the chain config
+  const renderUsdcPrefix = () => {
+    const prefix = chainConfig?.usdcPrefix;
+
+    if (!prefix) return "+$";
+
+    if (typeof prefix === "string") {
+      return `+${prefix}`;
+    } else {
+      return (
+        <>
+          +
+          <Image
+            src={prefix.src}
+            width={prefix.width || 16}
+            height={prefix.height || 16}
+            alt="USDC"
+            className="inline-block mr-0.5"
+          />
+        </>
+      );
+    }
+  };
+
   return (
     <button
       className={cn(
@@ -186,8 +207,13 @@ export const BetButton = ({
             <span className={`text-[8px] text-gray-500 w-full text-center`}>
               You could win
             </span>
-            <span className={`text-lg font-medium w-full text-center`}>
-              +{usdcAmountToDollars(potentialEarnings)}
+            <span
+              className={`text-lg font-medium w-full text-center flex items-center justify-center`}
+            >
+              <span className="flex items-center gap-1">
+                {renderUsdcPrefix()}
+                {usdcAmountToDollars(potentialEarnings)}
+              </span>
             </span>
           </>
         )}

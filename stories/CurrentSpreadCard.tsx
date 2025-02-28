@@ -1,4 +1,5 @@
 import { GET_POOL } from "@/app/queries";
+import { useEmbeddedWallet } from "@/components/EmbeddedWalletProvider";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -10,6 +11,7 @@ import {
   usdcAmountToDollars,
 } from "@/lib/utils";
 import { useQuery } from "@apollo/client";
+import Image from "next/image";
 import { FC } from "react";
 import { RatioBar } from "./RatioBar";
 
@@ -45,6 +47,7 @@ export const CurrentSpreadCard: FC<CurrentSpreadCardProps> = ({
   cardClassName = "w-full max-w-md mx-auto",
   showTotalBets = true,
 }) => {
+  const { chainConfig } = useEmbeddedWallet();
   const {
     data,
     loading: queryLoading,
@@ -61,6 +64,27 @@ export const CurrentSpreadCard: FC<CurrentSpreadCardProps> = ({
 
   // Add this for debugging
   console.log("Pool data:", pool);
+
+  // Render the USDC prefix based on the chain config
+  const renderUsdcPrefix = () => {
+    const prefix = chainConfig?.usdcPrefix;
+
+    if (!prefix) return "$";
+
+    if (typeof prefix === "string") {
+      return prefix;
+    } else {
+      return (
+        <Image
+          src={prefix.src}
+          width={prefix.width || 16}
+          height={prefix.height || 16}
+          alt="USDC"
+          className="inline-block mr-0.5"
+        />
+      );
+    }
+  };
 
   if (loading) return <LoadingSkeleton />;
   if (error || !pool) {
@@ -138,8 +162,12 @@ export const CurrentSpreadCard: FC<CurrentSpreadCardProps> = ({
                 >
                   {option}
                 </div>
-                <div className="text-lg font-semibold ml-auto">
-                  {usdcAmountToDollars(pool.totalBetsByOption[index] || 0)}
+                <div className="text-lg font-semibold ml-auto flex items-center gap-1">
+                  {renderUsdcPrefix()}
+                  {usdcAmountToDollars(
+                    pool.totalBetsByOption[index] || 0,
+                    false
+                  )}
                 </div>
               </div>
             );
@@ -151,8 +179,9 @@ export const CurrentSpreadCard: FC<CurrentSpreadCardProps> = ({
 
               <div className="flex mt-2">
                 <div className="text-lg text-white font-bold">Total bets</div>
-                <div className="text-lg text-white font-semibold ml-auto">
-                  {usdcAmountToDollars(pool.totalBets || 0)}
+                <div className="text-lg text-white font-semibold ml-auto flex items-center gap-1">
+                  {renderUsdcPrefix()}
+                  {usdcAmountToDollars(pool.totalBets || 0, false)}
                 </div>
               </div>
             </>

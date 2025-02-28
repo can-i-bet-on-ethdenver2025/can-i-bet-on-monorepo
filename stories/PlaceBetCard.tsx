@@ -1,6 +1,7 @@
 "use client";
 
 import { GET_BETS } from "@/app/queries";
+import { useEmbeddedWallet } from "@/components/EmbeddedWalletProvider";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -23,6 +24,8 @@ import { BetButton } from "@/stories/BetButton";
 import { ApolloError, useQuery } from "@apollo/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useWallets } from "@privy-io/react-auth";
+import { AlertCircle } from "lucide-react";
+import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -164,11 +167,13 @@ const calculateTotalsByOption = (bets: GetBetsQuery["bets"]) => {
 };
 
 export const PlaceBetCard = ({ pool, loading }: PlaceBetCardProps) => {
-  const { usdcBalance, isLoadingBalance, currentChainId } = useUsdcBalance();
+  const {
+    usdcBalance,
+    isLoadingBalance,
+    error: usdcBalanceError,
+  } = useUsdcBalance();
+  const { embeddedWallet, chainConfig, currentChainId } = useEmbeddedWallet();
   const { ready, wallets } = useWallets();
-  const embeddedWallet = wallets.find(
-    (wallet) => wallet.walletClientType === "privy"
-  );
 
   // Fetch user bets for this pool
   const { userBets, loading: loadingBets } = useUserBets(
@@ -196,8 +201,36 @@ export const PlaceBetCard = ({ pool, loading }: PlaceBetCardProps) => {
     },
   });
 
+  // Render the USDC prefix based on the chain config
+  const renderUsdcPrefix = () => {
+    const prefix = chainConfig?.usdcPrefix;
+
+    if (!prefix) return "$";
+
+    if (typeof prefix === "string") {
+      return prefix;
+    } else {
+      return (
+        <Image
+          src={prefix.src}
+          width={prefix.width || 16}
+          height={prefix.height || 16}
+          alt="USDC"
+          className="inline-block"
+        />
+      );
+    }
+  };
+
   // Handle MAX button click
   const handleMaxClick = () => {
+    if (usdcBalanceError) {
+      // If there's an error with the balance, set a safe default or show an error
+      setValue("betAmount", "0");
+      return;
+    }
+
+    // If balance is available, use it
     if (usdcBalance && parseFloat(usdcBalance) > 0) {
       // Limit to 10000 as per the form validation
       const maxAmount = Math.min(parseFloat(usdcBalance), 10000).toString();
@@ -261,14 +294,14 @@ export const PlaceBetCard = ({ pool, loading }: PlaceBetCardProps) => {
             <p className="text-center mb-2">Place a bet</p>
 
             <div className="relative">
-              <span className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400 text-xl">
-                $
+              <span className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400 text-xl flex items-center gap-1">
+                {renderUsdcPrefix()}
               </span>
               <input
                 id="betAmount"
                 type="number"
                 {...register("betAmount")}
-                className={`w-full pl-10 pr-24 py-4 text-xl rounded-2xl border transition-colors focus:outline-none bg-black ${
+                className={`w-full pl-12 pr-24 py-4 text-xl rounded-2xl border transition-colors focus:outline-none bg-black ${
                   errors.betAmount
                     ? "border-red-500"
                     : "border-white/60 hover:border-primay/80 focus:border-white"
@@ -294,14 +327,18 @@ export const PlaceBetCard = ({ pool, loading }: PlaceBetCardProps) => {
                 >
                   MAX
                 </button>
-                <span className="text-xs text-gray-400 mt-1">
-                  {isLoadingBalance
-                    ? "Loading balance..."
-                    : `Balance: $${
-                        usdcBalance
-                          ? usdcAmountToDollarsNumber(parseFloat(usdcBalance))
-                          : 0
-                      }`}
+                <span className="text-xs text-gray-400 mt-1 flex items-center">
+                  Balance:{" "}
+                  {isLoadingBalance ? (
+                    "Loading..."
+                  ) : (
+                    <span className="flex items-center gap-1">
+                      {renderUsdcPrefix()}
+                      {usdcBalance
+                        ? usdcAmountToDollarsNumber(parseFloat(usdcBalance))
+                        : 0}
+                    </span>
+                  )}
                 </span>
               </div>
             </div>
@@ -407,6 +444,13 @@ export const PlaceBetCard = ({ pool, loading }: PlaceBetCardProps) => {
         )}
         {frontendPoolStatus === FrontendPoolStatus.Pending && (
           <CountdownTimer betsCloseAt={parseInt(pool.betsCloseAt)} />
+        )}
+
+        {usdcBalanceError && (
+          <div className="text-red-500 text-sm flex items-center gap-1 mt-1">
+            <AlertCircle className="h-4 w-4" />
+            <span>Error loading balance: {usdcBalanceError}</span>
+          </div>
         )}
       </CardContent>
     </Card>

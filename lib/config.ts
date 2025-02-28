@@ -1,12 +1,7 @@
-import arbitrumIcon from "@/stories/assets/crypto/arbitrum-full-primary.svg";
 import baseIcon from "@/stories/assets/crypto/base-full-white.svg";
-import {
-  arbitrum,
-  arbitrumSepolia,
-  base,
-  baseSepolia,
-  Chain,
-} from "viem/chains";
+import baseSepoliaIcon from "@/stories/assets/crypto/base-full.svg";
+import usdpLogo from "@/stories/assets/usdp-logo.svg";
+import { base, baseSepolia, Chain } from "viem/chains";
 
 type ChainConfig = {
   chain: Chain;
@@ -17,6 +12,7 @@ type ChainConfig = {
   nativeCurrency: {
     symbol: string;
   };
+  usdcPrefix: string | { src: string; width?: number; height?: number };
 };
 
 // chainId -> per-chain config
@@ -25,42 +21,24 @@ export const CHAIN_CONFIG: Record<string, ChainConfig> = {
   [baseSepolia.id]: {
     chain: baseSepolia,
     applicationContractAddress: "0xcA7214565ae6994F81e5dd1ed97a4F817afa0A25",
-    iconUrl: baseIcon,
-    backgroundColor: "#0052FF",
+    iconUrl: baseSepoliaIcon,
+    backgroundColor: "#FFF",
     usdcAddress: "0x3224f86e3e6dfC22aC1d04Ad4037e9b1983D7ba2",
     nativeCurrency: {
       symbol: "ETH",
     },
+    usdcPrefix: { src: usdpLogo, width: 20, height: 20 },
   },
   [base.id]: {
     chain: base,
-    applicationContractAddress: "0x0000000000000000000000000000000000000000",
+    applicationContractAddress: "0x6853357edeEd20Af6136510Fb2E5A53aBdb91e16",
     iconUrl: baseIcon,
     backgroundColor: "#0052FF",
     usdcAddress: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
     nativeCurrency: {
       symbol: "ETH",
     },
-  },
-  [arbitrum.id]: {
-    chain: arbitrum,
-    applicationContractAddress: "0x0000000000000000000000000000000000000000",
-    iconUrl: arbitrumIcon,
-    backgroundColor: "#FFFFFF",
-    usdcAddress: "0x0000000000000000000000000000000000000000",
-    nativeCurrency: {
-      symbol: "ETH",
-    },
-  },
-  [arbitrumSepolia.id]: {
-    chain: arbitrumSepolia,
-    applicationContractAddress: "0x0000000000000000000000000000000000000000",
-    iconUrl: arbitrumIcon,
-    backgroundColor: "#FFFFFF",
-    usdcAddress: "0x0000000000000000000000000000000000000000",
-    nativeCurrency: {
-      symbol: "ETH",
-    },
+    usdcPrefix: "$",
   },
 };
 
